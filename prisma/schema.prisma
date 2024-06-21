@@ -197,3 +197,8 @@ enum deliveryStatusEnum {
   PENDING
   DELIVERED
 }
+
+model Profit {
+  id          Int @id @default(autoincrement())
+  totalProfit Int
+}

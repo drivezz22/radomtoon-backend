@@ -16,10 +16,13 @@ const createError = require("../utils/create-error");
 const authController = {};
 
 const checkUserExistence = async (email, phone) => {
-  const existSupporterEmail = await userService.findUserByEmail(email);
-  const existSupporterPhone = await userService.findUserByPhone(phone);
-  const existCreatorEmail = await creatorService.findUserByEmail(email);
-  const existCreatorPhone = await creatorService.findUserByPhone(phone);
+  const [existSupporterEmail, existSupporterPhone, existCreatorEmail, existCreatorPhone] =
+    await Promise.all([
+      userService.findUserByEmail(email),
+      userService.findUserByPhone(phone),
+      creatorService.findUserByEmail(email),
+      creatorService.findUserByPhone(phone),
+    ]);
 
   if (existSupporterEmail || existCreatorEmail) {
     createError({
@@ -94,8 +97,10 @@ authController.creatorApproval = tryCatch(async (req, res, next) => {
 
 authController.login = tryCatch(async (req, res, next) => {
   const data = req.input;
-  const existSupporterEmail = await userService.findUserByEmail(data?.email);
-  const existCreatorEmail = await creatorService.findUserByEmail(data?.email);
+  const [existSupporterEmail, existCreatorEmail] = await Promise.all([
+    userService.findUserByEmail(data?.email),
+    creatorService.findUserByEmail(data?.email),
+  ]);
 
   let existUser, role;
   if (existSupporterEmail) {

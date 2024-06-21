@@ -110,7 +110,7 @@ authController.creatorApproval = tryCatch(async (req, res, next) => {
 authController.login = tryCatch(async (req, res, next) => {
   const data = req.input;
   const existSupporterEmail = await userService.findUserByEmail(data?.email);
-  const existCreatorEmail = await creatorService.findUserForLoginByEmail(data?.email);
+  const existCreatorEmail = await creatorService.findUserByEmail(data?.email);
 
   let existUser;
   let role;
@@ -128,6 +128,17 @@ authController.login = tryCatch(async (req, res, next) => {
       statusCode: 400,
     });
   }
+
+  if (
+    role === USER_ROLE.CREATOR &&
+    existUser.isCreatorAcceptId === IS_CREATOR_ACCEPT_STATUS.PENDING
+  ) {
+    createError({
+      message: "This creator is waiting for approval",
+      statusCode: 400,
+    });
+  }
+
   const isMatch = await hashService.compare(data.password, existUser.password);
 
   if (!isMatch) {

@@ -16,9 +16,4 @@ creatorService.approveCreatorById = (id) =>
     where: { id },
   });
 
-creatorService.findUserForLoginByEmail = (email) =>
-  prisma.creator.findUnique({
-    where: { email, isCreatorAcceptId: IS_CREATOR_ACCEPT_STATUS.ACCEPTED },
-  });
-
 module.exports = creatorService;

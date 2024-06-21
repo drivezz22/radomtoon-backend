@@ -16,7 +16,7 @@ const initialRun = async () => {
   await prisma.deliveryStatus.createMany({ data: deliveryStatusTypeData });
   await prisma.isCreatorAcceptStatus.createMany({ data: isCreatorAcceptStatusTypeData });
   await prisma.milestoneRank.createMany({ data: milestoneRankData });
-  await prisma.productStatusType.createMany({ data: productStatusTypeData });
+  await prisma.productStatus.createMany({ data: productStatusTypeData });
   await prisma.tierRank.createMany({ data: tierRankData });
   await prisma.approvalStatus.createMany({ data: approvalStatusTypeData });
 };

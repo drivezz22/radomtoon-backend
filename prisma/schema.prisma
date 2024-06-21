@@ -40,9 +40,9 @@ model Creator {
 }
 
 model IsCreatorAcceptStatus {
-  id              Int                       @id @default(autoincrement())
-  isCreatedAccept IsCreatedAcceptStatusEnum
-  creators        Creator[]
+  id       Int                       @id @default(autoincrement())
+  status   IsCreatedAcceptStatusEnum
+  creators Creator[]
 }
 
 enum IsCreatedAcceptStatusEnum {
@@ -159,9 +159,10 @@ model ProductTier {
 }
 
 model TierRank {
-  id             Int              @id @default(autoincrement())
-  productTiers   ProductTier[]
-  SupportProduct SupportProduct[]
+  id              Int              @id @default(autoincrement())
+  tier            TierRankEnum
+  productTiers    ProductTier[]
+  supportProducts SupportProduct[]
 }
 
 enum TierRankEnum {

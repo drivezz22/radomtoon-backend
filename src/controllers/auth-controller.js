@@ -1,4 +1,8 @@
-const { IDENTITY_IMAGE_DIR, IS_CREATOR_ACCEPT_STATUS } = require("../constants");
+const {
+  IDENTITY_IMAGE_DIR,
+  IS_CREATOR_ACCEPT_STATUS,
+  USER_ROLE,
+} = require("../constants");
 const creatorService = require("../services/creator-service");
 const hashService = require("../services/hash-service");
 const jwtService = require("../services/jwt-service");
@@ -79,9 +83,45 @@ authController.creatorRegister = async (req, res, next) => {
   }
 };
 
+authController.creatorApproval = tryCatch(async (req, res, next) => {
+  const { creatorId } = req.params;
+
+  const existCreator = await creatorService.findUserById(+creatorId);
+
+  if (!existCreator) {
+    createError({
+      message: "No this creator Id in DB",
+      statusCode: 400,
+    });
+  }
+
+  if (existCreator.isCreatorAcceptId === IS_CREATOR_ACCEPT_STATUS.ACCEPTED) {
+    createError({
+      message: "This creator account is already accepted",
+      statusCode: 400,
+    });
+  }
+
+  await creatorService.approveCreatorById(+creatorId);
+
+  res.status(200).json({ message: "This creator is approved" });
+});
+
 authController.login = tryCatch(async (req, res, next) => {
   const data = req.input;
-  const existUser = await userService.findUserByEmail(data?.email);
+  const existSupporterEmail = await userService.findUserByEmail(data?.email);
+  const existCreatorEmail = await creatorService.findUserForLoginByEmail(data?.email);
+
+  let existUser;
+  let role;
+  if (existSupporterEmail) {
+    existUser = existSupporterEmail;
+    role = USER_ROLE.USER;
+  } else if (existCreatorEmail) {
+    existUser = existCreatorEmail;
+    role = USER_ROLE.CREATOR;
+  }
+
   if (!existUser) {
     createError({
       message: "Email or password is incorrect",
@@ -89,6 +129,7 @@ authController.login = tryCatch(async (req, res, next) => {
     });
   }
   const isMatch = await hashService.compare(data.password, existUser.password);
+
   if (!isMatch) {
     createError({
       message: "Email or password is incorrect",
@@ -96,7 +137,7 @@ authController.login = tryCatch(async (req, res, next) => {
     });
   }
 
-  const accessToken = jwtService.sign({ id: existUser.id });
+  const accessToken = jwtService.sign({ id: existUser.id, role: role });
 
   res.status(200).json({ accessToken });
 });

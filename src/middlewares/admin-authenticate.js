@@ -1,4 +1,4 @@
-const { createError } = require("../utils");
+const createError = require("../utils/create-error");
 
 const adminAuthenticate = (req, res, next) => {
   if (!req.user.isAdmin) {

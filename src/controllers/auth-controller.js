@@ -1,4 +1,8 @@
-const { IDENTITY_IMAGE_DIR, IS_CREATOR_ACCEPT_STATUS } = require("../constants");
+const {
+  IDENTITY_IMAGE_DIR,
+  IS_CREATOR_ACCEPT_STATUS,
+  USER_ROLE,
+} = require("../constants");
 const creatorService = require("../services/creator-service");
 const hashService = require("../services/hash-service");
 const jwtService = require("../services/jwt-service");
@@ -11,12 +15,14 @@ const createError = require("../utils/create-error");
 
 const authController = {};
 
-authController.supporterRegister = tryCatch(async (req, res, next) => {
-  const data = req.input;
-  const existSupporterEmail = await userService.findUserByEmail(data?.email);
-  const existSupporterPhone = await userService.findUserByPhone(data?.phone);
-  const existCreatorEmail = await creatorService.findUserByEmail(data?.email);
-  const existCreatorPhone = await creatorService.findUserByPhone(data?.phone);
+const checkUserExistence = async (email, phone) => {
+  const [existSupporterEmail, existSupporterPhone, existCreatorEmail, existCreatorPhone] =
+    await Promise.all([
+      userService.findUserByEmail(email),
+      userService.findUserByPhone(phone),
+      creatorService.findUserByEmail(email),
+      creatorService.findUserByPhone(phone),
+    ]);
 
   if (existSupporterEmail || existCreatorEmail) {
     createError({
@@ -33,6 +39,11 @@ authController.supporterRegister = tryCatch(async (req, res, next) => {
       field: "phone",
     });
   }
+};
+
+authController.supporterRegister = tryCatch(async (req, res, next) => {
+  const data = req.input;
+  await checkUserExistence(data?.email, data?.phone);
 
   data.password = await hashService.hash(data.password);
   await userService.createUser(data);
@@ -42,26 +53,7 @@ authController.supporterRegister = tryCatch(async (req, res, next) => {
 authController.creatorRegister = async (req, res, next) => {
   try {
     const data = req.input;
-    const existSupporterEmail = await userService.findUserByEmail(data?.email);
-    const existSupporterPhone = await userService.findUserByPhone(data?.phone);
-    const existCreatorEmail = await creatorService.findUserByEmail(data?.email);
-    const existCreatorPhone = await creatorService.findUserByPhone(data?.phone);
-
-    if (existSupporterEmail || existCreatorEmail) {
-      createError({
-        message: "Email is already in use",
-        statusCode: 400,
-        field: "email",
-      });
-    }
-
-    if (existSupporterPhone || existCreatorPhone) {
-      createError({
-        message: "Phone number is already in use",
-        statusCode: 400,
-        field: "phone",
-      });
-    }
+    await checkUserExistence(data?.email, data?.phone);
 
     // upload image
     if (req.file) {
@@ -79,16 +71,65 @@ authController.creatorRegister = async (req, res, next) => {
   }
 };
 
+authController.creatorApproval = tryCatch(async (req, res, next) => {
+  const { creatorId } = req.params;
+
+  const existCreator = await creatorService.findUserById(+creatorId);
+
+  if (!existCreator) {
+    createError({
+      message: "No this creator Id in DB",
+      statusCode: 400,
+    });
+  }
+
+  if (existCreator.isCreatorAcceptId === IS_CREATOR_ACCEPT_STATUS.ACCEPTED) {
+    createError({
+      message: "This creator account is already accepted",
+      statusCode: 400,
+    });
+  }
+
+  await creatorService.approveCreatorById(+creatorId);
+
+  res.status(200).json({ message: "This creator is approved" });
+});
+
 authController.login = tryCatch(async (req, res, next) => {
   const data = req.input;
-  const existUser = await userService.findUserByEmail(data?.email);
+  const [existSupporterEmail, existCreatorEmail] = await Promise.all([
+    userService.findUserByEmail(data?.email),
+    creatorService.findUserByEmail(data?.email),
+  ]);
+
+  let existUser, role;
+  if (existSupporterEmail) {
+    existUser = existSupporterEmail;
+    role = USER_ROLE.USER;
+  } else if (existCreatorEmail) {
+    existUser = existCreatorEmail;
+    role = USER_ROLE.CREATOR;
+  }
+
   if (!existUser) {
     createError({
       message: "Email or password is incorrect",
       statusCode: 400,
     });
   }
+
+  if (
+    role === USER_ROLE.CREATOR &&
+    existUser.isCreatorAcceptId === IS_CREATOR_ACCEPT_STATUS.PENDING
+  ) {
+    createError({
+      message: "This creator is waiting for approval",
+      statusCode: 400,
+    });
+  }
+
   const isMatch = await hashService.compare(data.password, existUser.password);
+
   if (!isMatch) {
     createError({
       message: "Email or password is incorrect",
@@ -96,7 +137,7 @@ authController.login = tryCatch(async (req, res, next) => {
     });
   }
 
-  const accessToken = jwtService.sign({ id: existUser.id });
+  const accessToken = jwtService.sign({ id: existUser.id, role: role });
 
   res.status(200).json({ accessToken });
 });

@@ -1,3 +1,5 @@
+const { USER_ROLE } = require("../constants");
+const creatorService = require("../services/creator-service");
 const jwtService = require("../services/jwt-service");
 const userService = require("../services/user-service");
 const createError = require("../utils/create-error");
@@ -11,7 +13,14 @@ const authenticate = tryCatch(async (req, res, next) => {
 
   const accessToken = authorization.split(" ")[1];
   const payload = jwtService.verify(accessToken);
-  const user = await userService.findUserById(payload.id);
+
+  let user;
+
+  if (payload.role === USER_ROLE.USER) {
+    user = await userService.findUserById(payload.id);
+  } else if (payload.role === USER_ROLE.CREATOR) {
+    user = await creatorService.findUserById(payload.id);
+  }
 
   if (!user) {
     createError({ message: "The user was not found", statusCode: 400 });

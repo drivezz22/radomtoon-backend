@@ -15,12 +15,11 @@ const createError = require("../utils/create-error");
 
 const authController = {};
 
-authController.supporterRegister = tryCatch(async (req, res, next) => {
-  const data = req.input;
-  const existSupporterEmail = await userService.findUserByEmail(data?.email);
-  const existSupporterPhone = await userService.findUserByPhone(data?.phone);
-  const existCreatorEmail = await creatorService.findUserByEmail(data?.email);
-  const existCreatorPhone = await creatorService.findUserByPhone(data?.phone);
+const checkUserExistence = async (email, phone) => {
+  const existSupporterEmail = await userService.findUserByEmail(email);
+  const existSupporterPhone = await userService.findUserByPhone(phone);
+  const existCreatorEmail = await creatorService.findUserByEmail(email);
+  const existCreatorPhone = await creatorService.findUserByPhone(phone);
 
   if (existSupporterEmail || existCreatorEmail) {
     createError({
@@ -37,6 +36,11 @@ authController.supporterRegister = tryCatch(async (req, res, next) => {
       field: "phone",
     });
   }
+};
+
+authController.supporterRegister = tryCatch(async (req, res, next) => {
+  const data = req.input;
+  await checkUserExistence(data?.email, data?.phone);
 
   data.password = await hashService.hash(data.password);
   await userService.createUser(data);
@@ -46,26 +50,7 @@ authController.supporterRegister = tryCatch(async (req, res, next) => {
 authController.creatorRegister = async (req, res, next) => {
   try {
     const data = req.input;
-    const existSupporterEmail = await userService.findUserByEmail(data?.email);
-    const existSupporterPhone = await userService.findUserByPhone(data?.phone);
-    const existCreatorEmail = await creatorService.findUserByEmail(data?.email);
-    const existCreatorPhone = await creatorService.findUserByPhone(data?.phone);
-
-    if (existSupporterEmail || existCreatorEmail) {
-      createError({
-        message: "Email is already in use",
-        statusCode: 400,
-        field: "email",
-      });
-    }
-
-    if (existSupporterPhone || existCreatorPhone) {
-      createError({
-        message: "Phone number is already in use",
-        statusCode: 400,
-        field: "phone",
-      });
-    }
+    await checkUserExistence(data?.email, data?.phone);
 
     // upload image
     if (req.file) {
@@ -112,8 +97,7 @@ authController.login = tryCatch(async (req, res, next) => {
   const existSupporterEmail = await userService.findUserByEmail(data?.email);
   const existCreatorEmail = await creatorService.findUserByEmail(data?.email);
 
-  let existUser;
-  let role;
+  let existUser, role;
   if (existSupporterEmail) {
     existUser = existSupporterEmail;
     role = USER_ROLE.USER;

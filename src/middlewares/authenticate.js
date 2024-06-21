@@ -13,8 +13,9 @@ const authenticate = tryCatch(async (req, res, next) => {
 
   const accessToken = authorization.split(" ")[1];
   const payload = jwtService.verify(accessToken);
+
   let user;
-  console.log(payload.role);
+
   if (payload.role === USER_ROLE.USER) {
     user = await userService.findUserById(payload.id);
   } else if (payload.role === USER_ROLE.CREATOR) {

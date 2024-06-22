@@ -16,4 +16,6 @@ creatorService.approveCreatorById = (id) =>
     where: { id },
   });
 
+creatorService.updateInfo = (id, data) => prisma.creator.update({ data, where: { id } });
+
 module.exports = creatorService;

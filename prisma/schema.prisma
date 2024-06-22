@@ -31,11 +31,12 @@ model Creator {
   profileImage      String?
   identityImage     String
   isCreatorAcceptId Int
+  biography         String?  @db.Text
+  website           String?  @db.VarChar(50)
   createdAt         DateTime @default(now()) @db.Timestamp(0)
   updatedAt         DateTime @updatedAt @db.Timestamp(0)
 
   isCreatorAccept IsCreatorAcceptStatus @relation(fields: [isCreatorAcceptId], references: [id])
-  creatorAbouts   CreatorAbout[]
   products        Product[]
 }
 
@@ -48,14 +49,6 @@ model IsCreatorAcceptStatus {
 enum IsCreatedAcceptStatusEnum {
   PENDING
   ACCEPTED
-}
-
-model CreatorAbout {
-  creatorId Int     @id
-  biography String? @db.Text
-  website   String? @db.VarChar(50)
-
-  creator Creator @relation(fields: [creatorId], references: [id])
 }
 
 model Product {
@@ -91,17 +84,23 @@ enum ProductStatusEnum {
   PENDING
   FAILED
   SUCCESS
+  DELETED
 }
 
 model ProductMilestone {
-  id              Int    @id @default(autoincrement())
-  productId       Int
-  milestoneRankId Int
-  milestoneDetail String @db.Text
+  id                 Int      @id @default(autoincrement())
+  productId          Int
+  milestoneRankId    Int
+  approvalStatusId   Int
+  milestoneDetail    String   @db.Text
+  evidencetextDetail String?  @db.Text
+  evidenceImage      String?
+  createdAt          DateTime @default(now()) @db.Timestamp(0)
+  updatedAt          DateTime @updatedAt @db.Timestamp(0)
 
-  product                   Product                    @relation(fields: [productId], references: [id])
-  milestoneRank             MilestoneRank              @relation(fields: [milestoneRankId], references: [id])
-  creatorMilestoneApprovals CreatorMilestoneApproval[]
+  approvalStatus ApprovalStatus @relation(fields: [approvalStatusId], references: [id])
+  product        Product        @relation(fields: [productId], references: [id])
+  milestoneRank  MilestoneRank  @relation(fields: [milestoneRankId], references: [id])
 }
 
 model MilestoneRank {
@@ -116,22 +115,10 @@ enum MilestoneRankEnum {
   RANK3
 }
 
-model CreatorMilestoneApproval {
-  milestoneId      Int      @id
-  approvalStatusId Int
-  textDetail       String   @db.Text
-  evidenceImage    String
-  createdAt        DateTime @default(now()) @db.Timestamp(0)
-  updatedAt        DateTime @updatedAt @db.Timestamp(0)
-
-  milestone      ProductMilestone @relation(fields: [milestoneId], references: [id])
-  ApprovalStatus ApprovalStatus   @relation(fields: [approvalStatusId], references: [id])
-}
-
 model ApprovalStatus {
-  id                        Int                        @id @default(autoincrement())
-  status                    ApprovalStatusEnum
-  creatorMilestoneApprovals CreatorMilestoneApproval[]
+  id               Int                @id @default(autoincrement())
+  status           ApprovalStatusEnum
+  ProductMilestone ProductMilestone[]
 }
 
 enum ApprovalStatusEnum {
@@ -165,14 +152,16 @@ enum TierRankEnum {
 }
 
 model SupportProduct {
-  id               Int       @id @default(autoincrement())
-  userId           Int
-  productId        Int
-  tierId           Int
-  deliveryStatusId Int
-  createdAt        DateTime  @default(now()) @db.Timestamp(0)
-  updatedAt        DateTime  @updatedAt @db.Timestamp(0)
-  deletedAt        DateTime? @db.Timestamp(0)
+  id                   Int       @id @default(autoincrement())
+  userId               Int
+  productId            Int
+  tierId               Int
+  deliveryStatusId     Int
+  alertProductStatus   Boolean   @default(false)
+  alertCompletePayment Boolean   @default(false)
+  createdAt            DateTime  @default(now()) @db.Timestamp(0)
+  updatedAt            DateTime  @updatedAt @db.Timestamp(0)
+  deletedAt            DateTime? @db.Timestamp(0)
 
   user           User           @relation(fields: [userId], references: [id])
   product        Product        @relation(fields: [productId], references: [id])

@@ -54,15 +54,14 @@ enum IsCreatedAcceptStatusEnum {
 model Product {
   id              Int      @id @default(autoincrement())
   creatorId       Int
-  productDetailId Int
   productStatusId Int
   productName     String   @db.VarChar(256)
   goal            Int
   deadline        DateTime
   isPublish       Boolean  @default(false)
-  story           Bytes    @db.LongBlob
+  story           String   @db.MediumText
   totalFund       Int      @default(0)
-  availableFund   Int?
+  availableFund   Int      @default(0)
   createdAt       DateTime @default(now()) @db.Timestamp(0)
   updatedAt       DateTime @updatedAt @db.Timestamp(0)
 

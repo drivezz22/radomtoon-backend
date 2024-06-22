@@ -9,3 +9,17 @@ exports.USER_ROLE = {
   USER: "USER",
   CREATOR: "CREATOR",
 };
+
+exports.PRODUCT_STATUS = {
+  PENDING: "PENDING",
+  FAILED: "FAILED",
+  SUCCESS: "SUCCESS",
+  DELETED: "DELETED",
+};
+
+exports.PRODUCT_STATUS_ID = {
+  PENDING: 1,
+  FAILED: 2,
+  SUCCESS: 3,
+  DELETED: 4,
+};

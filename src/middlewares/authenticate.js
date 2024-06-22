@@ -26,6 +26,7 @@ const authenticate = tryCatch(async (req, res, next) => {
     createError({ message: "The user was not found", statusCode: 400 });
   }
   delete user.password;
+  user.role = payload.role;
   req.user = user;
   next();
 });

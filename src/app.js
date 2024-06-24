@@ -8,6 +8,8 @@ const authRouter = require("./routes/auth-route");
 const creatorRouter = require("./routes/creator-route");
 const authenticate = require("./middlewares/authenticate");
 const productRouter = require("./routes/product-route");
+const adminAuthenticate = require("./middlewares/admin-authenticate");
+const adminRouter = require("./routes/admin-route");
 
 const app = express();
 
@@ -16,6 +18,7 @@ app.use(morgan("dev"));
 app.use(express.json());
 
 app.use("/auth", authRouter);
+app.use("/admin", authenticate, adminAuthenticate, adminRouter);
 app.use("/creators", authenticate, creatorRouter);
 app.use("/products", authenticate, productRouter);
 

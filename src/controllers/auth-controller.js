@@ -17,15 +17,21 @@ const adminService = require("../services/admin-service");
 const authController = {};
 
 const checkUserExistence = async (email, phone) => {
-  const [existSupporterEmail, existSupporterPhone, existCreatorEmail, existCreatorPhone] =
-    await Promise.all([
-      userService.findUserByEmail(email),
-      userService.findUserByPhone(phone),
-      creatorService.findUserByEmail(email),
-      creatorService.findUserByPhone(phone),
-    ]);
+  const [
+    existSupporterEmail,
+    existSupporterPhone,
+    existCreatorEmail,
+    existCreatorPhone,
+    existAdminEmail,
+  ] = await Promise.all([
+    userService.findUserByEmail(email),
+    userService.findUserByPhone(phone),
+    creatorService.findUserByEmail(email),
+    creatorService.findUserByPhone(phone),
+    adminService.findUserByEmail(email),
+  ]);
 
-  if (existSupporterEmail || existCreatorEmail) {
+  if (existSupporterEmail || existCreatorEmail || existAdminEmail) {
     createError({
       message: "Email is already in use",
       statusCode: 400,
@@ -78,7 +84,14 @@ authController.creatorRegister = async (req, res, next) => {
   }
 };
 
-authController.creatorApproval = tryCatch(async (req, res, next) => {
+authController.getCreatorApproval = tryCatch(async (req, res, next) => {
+  const existCreator = await creatorService.findAllCreatorPending();
+  res
+    .status(200)
+    .json({ message: "This creator is approved", creatorApprovalList: existCreator });
+});
+
+authController.updateCreatorApproval = tryCatch(async (req, res, next) => {
   const { creatorId } = req.params;
 
   const existCreator = await creatorService.findUserById(+creatorId);

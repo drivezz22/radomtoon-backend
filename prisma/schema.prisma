@@ -18,6 +18,7 @@ model User {
   createdAt       DateTime         @default(now()) @db.Timestamp(0)
   updatedAt       DateTime         @updatedAt @db.Timestamp(0)
   supportProducts SupportProduct[]
+  comments        Comment[]
 }
 
 model Admin {
@@ -49,6 +50,18 @@ model Creator {
   products        Product[]
 }
 
+model Comment {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  productId Int
+  comment   String   @db.Text
+  createdAt DateTime @default(now()) @db.Timestamp(0)
+  updatedAt DateTime @updatedAt @db.Timestamp(0)
+
+  user    User    @relation(fields: [userId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+}
+
 model IsCreatorAcceptStatus {
   id       Int                       @id @default(autoincrement())
   status   IsCreatedAcceptStatusEnum
@@ -61,25 +74,28 @@ enum IsCreatedAcceptStatusEnum {
 }
 
 model Product {
-  id              Int      @id @default(autoincrement())
-  creatorId       Int
-  productStatusId Int?
-  productName     String   @db.VarChar(256)
-  goal            Int
-  deadline        DateTime
-  isPublish       Boolean  @default(false)
-  story           String   @db.MediumText
-  totalFund       Int      @default(0)
-  availableFund   Int      @default(0)
-  createdAt       DateTime @default(now()) @db.Timestamp(0)
-  updatedAt       DateTime @updatedAt @db.Timestamp(0)
+  id               Int      @id @default(autoincrement())
+  creatorId        Int
+  productStatusId  Int?
+  approvalStatusId Int
+  productName      String   @db.VarChar(256)
+  goal             Int
+  deadline         DateTime
+  story            String   @db.MediumText
+  totalFund        Int      @default(0)
+  availableFund    Int      @default(0)
+  createdAt        DateTime @default(now()) @db.Timestamp(0)
+  updatedAt        DateTime @updatedAt @db.Timestamp(0)
 
-  creator       Creator        @relation(fields: [creatorId], references: [id])
-  productStatus ProductStatus? @relation(fields: [productStatusId], references: [id])
+  creator        Creator        @relation(fields: [creatorId], references: [id])
+  productStatus  ProductStatus? @relation(fields: [productStatusId], references: [id])
+  approvalStatus ApprovalStatus @relation(fields: [approvalStatusId], references: [id])
 
   productMilestones ProductMilestone[]
   productTiers      ProductTier[]
   supportProducts   SupportProduct[]
+  webProfits        WebProfit[]
+  comments          Comment[]
 }
 
 model ProductStatus {
@@ -124,9 +140,10 @@ enum MilestoneRankEnum {
 }
 
 model ApprovalStatus {
-  id               Int                @id @default(autoincrement())
-  status           ApprovalStatusEnum
-  ProductMilestone ProductMilestone[]
+  id                Int                @id @default(autoincrement())
+  status            ApprovalStatusEnum
+  productMilestones ProductMilestone[]
+  products          Product[]
 }
 
 enum ApprovalStatusEnum {
@@ -160,16 +177,14 @@ enum TierRankEnum {
 }
 
 model SupportProduct {
-  id                   Int       @id @default(autoincrement())
-  userId               Int
-  productId            Int
-  tierId               Int
-  deliveryStatusId     Int
-  alertProductStatus   Boolean   @default(false)
-  alertCompletePayment Boolean   @default(false)
-  createdAt            DateTime  @default(now()) @db.Timestamp(0)
-  updatedAt            DateTime  @updatedAt @db.Timestamp(0)
-  deletedAt            DateTime? @db.Timestamp(0)
+  id               Int       @id @default(autoincrement())
+  userId           Int
+  productId        Int
+  tierId           Int
+  deliveryStatusId Int
+  createdAt        DateTime  @default(now()) @db.Timestamp(0)
+  updatedAt        DateTime  @updatedAt @db.Timestamp(0)
+  deletedAt        DateTime? @db.Timestamp(0)
 
   user           User           @relation(fields: [userId], references: [id])
   product        Product        @relation(fields: [productId], references: [id])
@@ -188,7 +203,8 @@ enum deliveryStatusEnum {
   DELIVERED
 }
 
-model Profit {
-  id          Int @id @default(autoincrement())
+model WebProfit {
+  productId   Int     @id
   totalProfit Int
+  product     Product @relation(fields: [productId], references: [id])
 }

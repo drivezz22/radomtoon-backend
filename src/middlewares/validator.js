@@ -24,3 +24,5 @@ exports.createProductValidator = (req, res, next) =>
   validatorWrapper(productValidateSchema.createProduct, req, res, next);
 exports.updateProductValidator = (req, res, next) =>
   validatorWrapper(productValidateSchema.updateProduct, req, res, next);
+exports.failApprovalValidator = (req, res, next) =>
+  validatorWrapper(productValidateSchema.failApproval, req, res, next);

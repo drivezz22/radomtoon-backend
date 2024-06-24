@@ -1,6 +1,7 @@
-const { PRODUCT_STATUS_ID } = require("../constants");
+const { MILESTONE_RANK_ID, APPROVAL_STATUS_ID } = require("../constants");
 const milestoneService = require("../services/milestone-service");
 const productService = require("../services/product-service");
+const createError = require("../utils/create-error");
 const tryCatch = require("../utils/try-catch-wrapper");
 
 const productController = {};
@@ -10,7 +11,6 @@ productController.createProduct = tryCatch(async (req, res) => {
 
   const productData = {
     creatorId: req.user.id,
-    productStatusId: PRODUCT_STATUS_ID.PENDING,
     productName,
     goal,
     deadline: new Date(deadline),
@@ -20,18 +20,38 @@ productController.createProduct = tryCatch(async (req, res) => {
   const productResult = await productService.createProduct(productData);
 
   let milestoneResult = [];
-  if (milestoneDetailList.length > 0) {
-    const milestonePromises = milestoneDetailList.map((el) => {
-      const milestoneData = {
-        productId: productResult.id,
-        milestoneRankId: el.rank,
-        approvalStatusId: 1,
-        milestoneDetail: el.detail,
-      };
-      return milestoneService.createProduct(milestoneData);
+
+  // Validate milestones
+  const milestoneRanks = milestoneDetailList.map((el) => el.rank);
+  const milestoneRanksSet = new Set(milestoneRanks);
+
+  if (milestoneRanksSet.size !== milestoneRanks.length) {
+    throw createError({
+      message: "Some milestones have the same rank",
+      statusCode: 400,
     });
-    milestoneResult = await Promise.all(milestonePromises);
   }
+
+  const isFoundAllMilestoneRank = milestoneRanks.every((r) =>
+    Object.values(MILESTONE_RANK_ID).includes(r)
+  );
+  if (!isFoundAllMilestoneRank) {
+    throw createError({
+      message: "Incorrect milestone rank",
+      statusCode: 400,
+    });
+  }
+
+  const milestonePromises = milestoneDetailList.map((el) => {
+    const milestoneData = {
+      productId: productResult.id,
+      milestoneRankId: el.rank,
+      approvalStatusId: APPROVAL_STATUS_ID.PENDING,
+      milestoneDetail: el.detail,
+    };
+    return milestoneService.createProduct(milestoneData);
+  });
+  milestoneResult = await Promise.all(milestonePromises);
 
   res.status(201).json({
     message: "Product is created",

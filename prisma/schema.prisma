@@ -63,7 +63,7 @@ enum IsCreatedAcceptStatusEnum {
 model Product {
   id              Int      @id @default(autoincrement())
   creatorId       Int
-  productStatusId Int
+  productStatusId Int?
   productName     String   @db.VarChar(256)
   goal            Int
   deadline        DateTime
@@ -74,8 +74,8 @@ model Product {
   createdAt       DateTime @default(now()) @db.Timestamp(0)
   updatedAt       DateTime @updatedAt @db.Timestamp(0)
 
-  creator       Creator       @relation(fields: [creatorId], references: [id])
-  productStatus ProductStatus @relation(fields: [productStatusId], references: [id])
+  creator       Creator        @relation(fields: [creatorId], references: [id])
+  productStatus ProductStatus? @relation(fields: [productStatusId], references: [id])
 
   productMilestones ProductMilestone[]
   productTiers      ProductTier[]

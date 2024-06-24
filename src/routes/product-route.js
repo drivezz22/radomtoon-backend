@@ -22,4 +22,6 @@ productRouter.patch(
   updateProductValidator,
   productController.updateProduct
 );
+
+productRouter.get("/", productController.getAllProduct);
 module.exports = productRouter;

@@ -1,5 +1,5 @@
 const dayjs = require("dayjs");
-const { MILESTONE_RANK_ID, APPROVAL_STATUS_ID } = require("../constants");
+const { MILESTONE_RANK_ID, APPROVAL_STATUS_ID, USER_ROLE } = require("../constants");
 const milestoneService = require("../services/milestone-service");
 const productService = require("../services/product-service");
 const createError = require("../utils/create-error");
@@ -59,7 +59,6 @@ productController.createProduct = tryCatch(async (req, res, next) => {
   };
   const productResult = await productService.createProduct(productData);
 
-  // Validate milestones
   validateMilestones(milestoneDetailList);
 
   const milestonePromises = milestoneDetailList.map((el) => {
@@ -82,7 +81,10 @@ productController.createProduct = tryCatch(async (req, res, next) => {
 
 productController.deleteProduct = tryCatch(async (req, res, next) => {
   const { productId } = req.params;
-  const existProduct = await productService.findProductById(req.user.id, +productId);
+  const existProduct = await productService.findProductByCreatorIdAndProductId(
+    req.user.id,
+    +productId
+  );
   if (!existProduct) {
     return res.status(204).end();
   }
@@ -101,7 +103,10 @@ productController.deleteProduct = tryCatch(async (req, res, next) => {
 productController.updateProduct = tryCatch(async (req, res, next) => {
   const { productName, goal, deadline, story, milestoneDetailList = [] } = req.body;
   const { productId } = req.params;
-  const existProduct = await productService.findProductById(req.user.id, +productId);
+  const existProduct = await productService.findProductByCreatorIdAndProductId(
+    req.user.id,
+    +productId
+  );
 
   if (!existProduct) {
     createError({
@@ -168,6 +173,66 @@ productController.updateProduct = tryCatch(async (req, res, next) => {
     productDetail: productResult,
     milestoneDetail: milestoneResult,
   });
+});
+
+productController.getAllProduct = tryCatch(async (req, res, next) => {
+  if (req.user.role === USER_ROLE.SUPPORTER) {
+    const allProduct = await productService.getAllProduct();
+    res.status(200).json({ productList: allProduct });
+  } else if (req.user.role === USER_ROLE.CREATOR) {
+    const allProductByCreatorId = await productService.getAllProductByCreatorId(
+      req.user.id
+    );
+    res.status(200).json({ productList: allProductByCreatorId });
+  }
+});
+
+productController.getAllProductForAdmin = tryCatch(async (req, res, next) => {
+  console.log("Ssss");
+  const allProductForAdmin = await productService.getAllProductForAdmin();
+  res.status(200).json({ productList: allProductForAdmin });
+});
+
+productController.failApproval = tryCatch(async (req, res, next) => {
+  const { productId } = req.params;
+  const data = req.body;
+  const existProduct = await productService.findProductById(+productId);
+  if (!existProduct) {
+    createError({
+      message: "This product is not exist",
+      statusCode: 400,
+    });
+  }
+
+  if (existProduct.approvalStatusId === APPROVAL_STATUS_ID.SUCCESS) {
+    createError({
+      message: "This product is already pass approval",
+      statusCode: 400,
+    });
+  }
+  await productService.failApproval(+productId);
+  res.status(200).json({ message: "Fail Approval is updated", comment: data.comment });
+});
+
+productController.passApproval = tryCatch(async (req, res, next) => {
+  const { productId } = req.params;
+  const existProduct = await productService.findProductById(+productId);
+  if (!existProduct) {
+    createError({
+      message: "This product is not exist",
+      statusCode: 400,
+    });
+  }
+
+  if (existProduct.approvalStatusId === APPROVAL_STATUS_ID.SUCCESS) {
+    createError({
+      message: "This product is already pass approval",
+      statusCode: 400,
+    });
+  }
+
+  await productService.passApproval(+productId);
+  res.status(200).json({ message: "Pass Approval is updated" });
 });
 
 module.exports = productController;

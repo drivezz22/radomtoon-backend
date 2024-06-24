@@ -1,18 +1,72 @@
+const { APPROVAL_STATUS_ID, PRODUCT_STATUS_ID } = require("../constants");
 const prisma = require("../models/prisma");
 const productService = {};
 
 productService.createProduct = (data) => prisma.product.create({ data });
 
-productService.findProductById = (creatorId, productId) =>
+productService.findProductByCreatorIdAndProductId = (creatorId, productId) =>
   prisma.product.findFirst({
     where: {
       id: productId,
       creatorId,
     },
   });
+
+productService.findProductById = (productId) =>
+  prisma.product.findUnique({
+    where: {
+      id: productId,
+    },
+  });
+
 productService.deleteProductById = (id) => prisma.product.deleteMany({ where: { id } });
 
 productService.updateProductById = (id, data) =>
   prisma.product.update({ data, where: { id } });
+
+productService.getAllProduct = (id, data) =>
+  prisma.product.findMany({
+    data,
+    where: {
+      approvalStatusId: APPROVAL_STATUS_ID.SUCCESS,
+      productStatusId: { not: PRODUCT_STATUS_ID.FAILED },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+productService.getAllProduct = () =>
+  prisma.product.findMany({
+    where: {
+      approvalStatusId: APPROVAL_STATUS_ID.SUCCESS,
+      productStatusId: { not: PRODUCT_STATUS_ID.FAILED },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+productService.getAllProductByCreatorId = (creatorId) =>
+  prisma.product.findMany({ where: { creatorId }, orderBy: { createdAt: "desc" } });
+
+productService.getAllProductForAdmin = () =>
+  prisma.product.findMany({
+    where: { approvalStatusId: APPROVAL_STATUS_ID.SUCCESS },
+    include: { webProfits: true },
+  });
+
+productService.failApproval = (id) =>
+  prisma.product.update({
+    data: {
+      approvalStatusId: APPROVAL_STATUS_ID.FAILED,
+    },
+    where: { id },
+  });
+
+productService.passApproval = (id) =>
+  prisma.product.update({
+    data: {
+      approvalStatusId: APPROVAL_STATUS_ID.SUCCESS,
+      productStatusId: PRODUCT_STATUS_ID.PENDING,
+    },
+    where: { id },
+  });
 
 module.exports = productService;

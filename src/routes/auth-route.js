@@ -7,7 +7,6 @@ const {
 } = require("../middlewares/validator");
 const authController = require("../controllers/auth-controller");
 const upload = require("../middlewares/upload");
-const adminAuthenticate = require("../middlewares/admin-authenticate");
 
 const authRouter = express.Router();
 

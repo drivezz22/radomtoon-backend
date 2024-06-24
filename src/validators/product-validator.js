@@ -18,4 +18,8 @@ productValidateSchema.updateProduct = Joi.object({
   milestoneDetailList: Joi.array().allow(null),
 });
 
+productValidateSchema.failApproval = Joi.object({
+  comment: Joi.string().required(),
+});
+
 module.exports = productValidateSchema;

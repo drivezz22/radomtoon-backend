@@ -1,4 +1,5 @@
 const { USER_ROLE } = require("../constants");
+const adminService = require("../services/admin-service");
 const creatorService = require("../services/creator-service");
 const jwtService = require("../services/jwt-service");
 const userService = require("../services/user-service");
@@ -13,13 +14,14 @@ const authenticate = tryCatch(async (req, res, next) => {
 
   const accessToken = authorization.split(" ")[1];
   const payload = jwtService.verify(accessToken);
-
   let user;
 
-  if (payload.role === USER_ROLE.USER) {
+  if (payload.role === USER_ROLE.SUPPORTER) {
     user = await userService.findUserById(payload.id);
   } else if (payload.role === USER_ROLE.CREATOR) {
     user = await creatorService.findUserById(payload.id);
+  } else if (payload.role === USER_ROLE.ADMIN) {
+    user = await adminService.findUserById(payload.id);
   }
 
   if (!user) {

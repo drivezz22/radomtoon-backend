@@ -1,9 +1,10 @@
+const { USER_ROLE } = require("../constants");
 const createError = require("../utils/create-error");
 
 const adminAuthenticate = (req, res, next) => {
-  if (!req.user.isAdmin) {
+  if (req.user.role !== USER_ROLE.ADMIN) {
     createError({
-      message: "User has no access rights",
+      message: "Only for admin",
       statusCode: 403,
     });
   }

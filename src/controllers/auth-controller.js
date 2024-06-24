@@ -12,6 +12,7 @@ const userService = require("../services/user-service");
 const fs = require("fs-extra");
 const tryCatch = require("../utils/try-catch-wrapper");
 const createError = require("../utils/create-error");
+const adminService = require("../services/admin-service");
 
 const authController = {};
 
@@ -55,10 +56,16 @@ authController.creatorRegister = async (req, res, next) => {
     const data = req.input;
     await checkUserExistence(data?.email, data?.phone);
 
-    // upload image
-    if (req.file) {
-      data.identityImage = await uploadService.upload(req.file.path);
+    if (!req.file) {
+      createError({
+        message: "Please select your identity image",
+        statusCode: 400,
+        field: "identityImage",
+      });
     }
+
+    // upload image
+    data.identityImage = await uploadService.upload(req.file.path);
 
     data.password = await hashService.hash(data.password);
     data.isCreatorAcceptId = IS_CREATOR_ACCEPT_STATUS.PENDING;
@@ -97,18 +104,22 @@ authController.creatorApproval = tryCatch(async (req, res, next) => {
 
 authController.login = tryCatch(async (req, res, next) => {
   const data = req.input;
-  const [existSupporterEmail, existCreatorEmail] = await Promise.all([
+  const [existSupporterEmail, existCreatorEmail, existAdminEmail] = await Promise.all([
     userService.findUserByEmail(data?.email),
     creatorService.findUserByEmail(data?.email),
+    adminService.findUserByEmail(data?.email),
   ]);
 
   let existUser, role;
   if (existSupporterEmail) {
     existUser = existSupporterEmail;
-    role = USER_ROLE.USER;
+    role = USER_ROLE.SUPPORTER;
   } else if (existCreatorEmail) {
     existUser = existCreatorEmail;
     role = USER_ROLE.CREATOR;
+  } else if (existAdminEmail) {
+    existUser = existAdminEmail;
+    role = USER_ROLE.ADMIN;
   }
 
   if (!existUser) {

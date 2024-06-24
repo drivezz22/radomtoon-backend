@@ -6,8 +6,9 @@ exports.IS_CREATOR_ACCEPT_STATUS = {
 };
 
 exports.USER_ROLE = {
-  USER: "USER",
+  SUPPORTER: "SUPPORTER",
   CREATOR: "CREATOR",
+  ADMIN: "ADMIN",
 };
 
 exports.PRODUCT_STATUS = {

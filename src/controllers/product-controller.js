@@ -12,11 +12,12 @@ productController.createProduct = tryCatch(async (req, res) => {
   const productData = {
     creatorId: req.user.id,
     productName,
-    goal,
+    approvalStatusId: APPROVAL_STATUS_ID.PENDING,
+    goal: +goal,
     deadline: new Date(deadline),
     story,
   };
-
+  console.log("productData", productData);
   const productResult = await productService.createProduct(productData);
 
   let milestoneResult = [];

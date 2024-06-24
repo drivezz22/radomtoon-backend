@@ -11,6 +11,7 @@ const productRouter = require("./routes/product-route");
 const adminAuthenticate = require("./middlewares/admin-authenticate");
 const adminRouter = require("./routes/admin-route");
 const creatorAuthenticate = require("./middlewares/creator-authenticate");
+const commentRouter = require("./routes/comment-route");
 
 const app = express();
 
@@ -22,6 +23,7 @@ app.use("/auth", authRouter);
 app.use("/admin", authenticate, adminAuthenticate, adminRouter);
 app.use("/creators", authenticate, creatorAuthenticate, creatorRouter);
 app.use("/products", authenticate, productRouter);
+app.use("/comments", authenticate, commentRouter);
 
 app.use(notFoundMiddleware);
 app.use(errorMiddleware);

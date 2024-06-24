@@ -1,5 +1,6 @@
 const createError = require("../utils/create-error");
 const authValidateSchema = require("../validators/auth-validator");
+const commentValidateSchema = require("../validators/comment-validator");
 const creatorValidateSchema = require("../validators/creator-validator");
 const productValidateSchema = require("../validators/product-validator");
 
@@ -26,3 +27,5 @@ exports.updateProductValidator = (req, res, next) =>
   validatorWrapper(productValidateSchema.updateProduct, req, res, next);
 exports.failApprovalValidator = (req, res, next) =>
   validatorWrapper(productValidateSchema.failApproval, req, res, next);
+exports.commentValidator = (req, res, next) =>
+  validatorWrapper(commentValidateSchema.create, req, res, next);

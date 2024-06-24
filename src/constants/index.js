@@ -6,6 +6,43 @@ exports.IS_CREATOR_ACCEPT_STATUS = {
 };
 
 exports.USER_ROLE = {
-  USER: "USER",
+  SUPPORTER: "SUPPORTER",
   CREATOR: "CREATOR",
+  ADMIN: "ADMIN",
+};
+
+exports.PRODUCT_STATUS = {
+  PENDING: "PENDING",
+  FAILED: "FAILED",
+  SUCCESS: "SUCCESS",
+};
+
+exports.PRODUCT_STATUS_ID = {
+  PENDING: 1,
+  FAILED: 2,
+  SUCCESS: 3,
+};
+
+exports.MILESTONE_RANK = {
+  RANK1: "RANK1",
+  RANK2: "RANK2",
+  RANK3: "RANK3",
+};
+
+exports.MILESTONE_RANK_ID = {
+  RANK1: 1,
+  RANK2: 2,
+  RANK3: 3,
+};
+
+exports.APPROVAL_STATUS_ID = {
+  PENDING: 1,
+  FAILED: 2,
+  SUCCESS: 3,
+};
+
+exports.APPROVAL_STATUS_ID = {
+  PENDING: 1,
+  FAILED: 2,
+  SUCCESS: 3,
 };

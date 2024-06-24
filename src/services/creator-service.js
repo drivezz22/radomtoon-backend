@@ -16,4 +16,11 @@ creatorService.approveCreatorById = (id) =>
     where: { id },
   });
 
+creatorService.updateInfo = (id, data) => prisma.creator.update({ data, where: { id } });
+
+creatorService.findAllCreatorPending = () =>
+  prisma.creator.findMany({
+    where: { isCreatorAcceptId: IS_CREATOR_ACCEPT_STATUS.PENDING },
+  });
+
 module.exports = creatorService;

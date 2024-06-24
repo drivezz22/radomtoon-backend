@@ -22,12 +22,7 @@ authRouter.post(
   creatorRegisterValidator,
   authController.creatorRegister
 );
-authRouter.post(
-  "/register/creator-approve/:creatorId",
-  authenticate,
-  adminAuthenticate,
-  authController.creatorApproval
-);
+
 authRouter.post("/login", loginValidator, authController.login);
 authRouter.get("/get-me", authenticate, authController.getMe);
 

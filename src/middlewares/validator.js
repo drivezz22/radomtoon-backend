@@ -1,5 +1,7 @@
 const createError = require("../utils/create-error");
 const authValidateSchema = require("../validators/auth-validator");
+const creatorValidateSchema = require("../validators/creator-validator");
+const productValidateSchema = require("../validators/product-validator");
 
 const validatorWrapper = (schema, req, res, next) => {
   const { value, error } = schema.validate(req.body);
@@ -16,3 +18,9 @@ exports.creatorRegisterValidator = (req, res, next) =>
   validatorWrapper(authValidateSchema.creatorRegister, req, res, next);
 exports.loginValidator = (req, res, next) =>
   validatorWrapper(authValidateSchema.login, req, res, next);
+exports.createAboutValidator = (req, res, next) =>
+  validatorWrapper(creatorValidateSchema.createAbout, req, res, next);
+exports.createProductValidator = (req, res, next) =>
+  validatorWrapper(productValidateSchema.createProduct, req, res, next);
+exports.updateProductValidator = (req, res, next) =>
+  validatorWrapper(productValidateSchema.updateProduct, req, res, next);

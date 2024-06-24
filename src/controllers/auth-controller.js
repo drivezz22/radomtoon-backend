@@ -12,19 +12,26 @@ const userService = require("../services/user-service");
 const fs = require("fs-extra");
 const tryCatch = require("../utils/try-catch-wrapper");
 const createError = require("../utils/create-error");
+const adminService = require("../services/admin-service");
 
 const authController = {};
 
 const checkUserExistence = async (email, phone) => {
-  const [existSupporterEmail, existSupporterPhone, existCreatorEmail, existCreatorPhone] =
-    await Promise.all([
-      userService.findUserByEmail(email),
-      userService.findUserByPhone(phone),
-      creatorService.findUserByEmail(email),
-      creatorService.findUserByPhone(phone),
-    ]);
+  const [
+    existSupporterEmail,
+    existSupporterPhone,
+    existCreatorEmail,
+    existCreatorPhone,
+    existAdminEmail,
+  ] = await Promise.all([
+    userService.findUserByEmail(email),
+    userService.findUserByPhone(phone),
+    creatorService.findUserByEmail(email),
+    creatorService.findUserByPhone(phone),
+    adminService.findUserByEmail(email),
+  ]);
 
-  if (existSupporterEmail || existCreatorEmail) {
+  if (existSupporterEmail || existCreatorEmail || existAdminEmail) {
     createError({
       message: "Email is already in use",
       statusCode: 400,
@@ -55,10 +62,16 @@ authController.creatorRegister = async (req, res, next) => {
     const data = req.input;
     await checkUserExistence(data?.email, data?.phone);
 
-    // upload image
-    if (req.file) {
-      data.identityImage = await uploadService.upload(req.file.path);
+    if (!req.file) {
+      createError({
+        message: "Please select your identity image",
+        statusCode: 400,
+        field: "identityImage",
+      });
     }
+
+    // upload image
+    data.identityImage = await uploadService.upload(req.file.path);
 
     data.password = await hashService.hash(data.password);
     data.isCreatorAcceptId = IS_CREATOR_ACCEPT_STATUS.PENDING;
@@ -71,7 +84,14 @@ authController.creatorRegister = async (req, res, next) => {
   }
 };
 
-authController.creatorApproval = tryCatch(async (req, res, next) => {
+authController.getCreatorApproval = tryCatch(async (req, res, next) => {
+  const existCreator = await creatorService.findAllCreatorPending();
+  res
+    .status(200)
+    .json({ message: "This creator is approved", creatorApprovalList: existCreator });
+});
+
+authController.updateCreatorApproval = tryCatch(async (req, res, next) => {
   const { creatorId } = req.params;
 
   const existCreator = await creatorService.findUserById(+creatorId);
@@ -97,18 +117,22 @@ authController.creatorApproval = tryCatch(async (req, res, next) => {
 
 authController.login = tryCatch(async (req, res, next) => {
   const data = req.input;
-  const [existSupporterEmail, existCreatorEmail] = await Promise.all([
+  const [existSupporterEmail, existCreatorEmail, existAdminEmail] = await Promise.all([
     userService.findUserByEmail(data?.email),
     creatorService.findUserByEmail(data?.email),
+    adminService.findUserByEmail(data?.email),
   ]);
 
   let existUser, role;
   if (existSupporterEmail) {
     existUser = existSupporterEmail;
-    role = USER_ROLE.USER;
+    role = USER_ROLE.SUPPORTER;
   } else if (existCreatorEmail) {
     existUser = existCreatorEmail;
     role = USER_ROLE.CREATOR;
+  } else if (existAdminEmail) {
+    existUser = existAdminEmail;
+    role = USER_ROLE.ADMIN;
   }
 
   if (!existUser) {

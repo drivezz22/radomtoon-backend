@@ -1,7 +1,10 @@
 const express = require("express");
 const creatorAuthenticate = require("../middlewares/creator-authenticate");
 const productController = require("../controllers/product-controller");
-const { createProductValidator } = require("../middlewares/validator");
+const {
+  createProductValidator,
+  updateProductValidator,
+} = require("../middlewares/validator");
 
 const productRouter = express.Router();
 
@@ -12,4 +15,11 @@ productRouter.post(
   productController.createProduct
 );
 
+productRouter.delete("/:productId", creatorAuthenticate, productController.deleteProduct);
+productRouter.patch(
+  "/:productId",
+  creatorAuthenticate,
+  updateProductValidator,
+  productController.updateProduct
+);
 module.exports = productRouter;

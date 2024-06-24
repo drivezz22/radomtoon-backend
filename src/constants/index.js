@@ -15,14 +15,12 @@ exports.PRODUCT_STATUS = {
   PENDING: "PENDING",
   FAILED: "FAILED",
   SUCCESS: "SUCCESS",
-  DELETED: "DELETED",
 };
 
 exports.PRODUCT_STATUS_ID = {
   PENDING: 1,
   FAILED: 2,
   SUCCESS: 3,
-  DELETED: 4,
 };
 
 exports.MILESTONE_RANK = {
@@ -35,6 +33,12 @@ exports.MILESTONE_RANK_ID = {
   RANK1: 1,
   RANK2: 2,
   RANK3: 3,
+};
+
+exports.APPROVAL_STATUS_ID = {
+  PENDING: 1,
+  FAILED: 2,
+  SUCCESS: 3,
 };
 
 exports.APPROVAL_STATUS_ID = {

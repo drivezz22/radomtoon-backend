@@ -22,3 +22,5 @@ exports.createAboutValidator = (req, res, next) =>
   validatorWrapper(creatorValidateSchema.createAbout, req, res, next);
 exports.createProductValidator = (req, res, next) =>
   validatorWrapper(productValidateSchema.createProduct, req, res, next);
+exports.updateProductValidator = (req, res, next) =>
+  validatorWrapper(productValidateSchema.updateProduct, req, res, next);

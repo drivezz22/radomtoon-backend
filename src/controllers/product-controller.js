@@ -47,7 +47,14 @@ const validateDeadline = (deadline) => {
 };
 
 productController.createProduct = tryCatch(async (req, res, next) => {
-  const { productName, goal, deadline, story, milestoneDetailList = [] } = req.body;
+  const {
+    productName,
+    goal,
+    deadline,
+    story,
+    categoryId,
+    milestoneDetailList = [],
+  } = req.body;
   validateDeadline(deadline);
 
   const productData = {
@@ -56,6 +63,7 @@ productController.createProduct = tryCatch(async (req, res, next) => {
     goal: +goal,
     deadline: new Date(deadline),
     story,
+    categoryId,
   };
   const productResult = await productService.createProduct(productData);
 
@@ -101,7 +109,14 @@ productController.deleteProduct = tryCatch(async (req, res, next) => {
 });
 
 productController.updateProduct = tryCatch(async (req, res, next) => {
-  const { productName, goal, deadline, story, milestoneDetailList = [] } = req.body;
+  const {
+    productName,
+    goal,
+    deadline,
+    story,
+    categoryId,
+    milestoneDetailList = [],
+  } = req.body;
   const { productId } = req.params;
   const existProduct = await productService.findProductByCreatorIdAndProductId(
     req.user.id,
@@ -138,6 +153,7 @@ productController.updateProduct = tryCatch(async (req, res, next) => {
     goal: +goal,
     deadline: deadline ? new Date(deadline) : undefined,
     story,
+    categoryId,
   };
 
   const filteredProductData = Object.fromEntries(

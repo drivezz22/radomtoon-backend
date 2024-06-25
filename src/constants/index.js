@@ -1,4 +1,4 @@
-exports.IDENTITY_IMAGE_DIR = "./public/images";
+exports.IMAGE_DIR = "./public/images";
 
 exports.IS_CREATOR_ACCEPT_STATUS = {
   PENDING: 1,
@@ -45,4 +45,17 @@ exports.APPROVAL_STATUS_ID = {
   PENDING: 1,
   FAILED: 2,
   SUCCESS: 3,
+};
+
+exports.CATEGORIES_TYPE_ID = {
+  ART: 1,
+  COMICS: 2,
+  CRAFTS: 3,
+  DANCE: 4,
+  DESIGN: 5,
+  FASHION: 6,
+  FILM: 7,
+  GAMES: 8,
+  MUSIC: 9,
+  TECHNOLOGY: 10,
 };

@@ -78,6 +78,7 @@ model Product {
   creatorId        Int
   productStatusId  Int?
   approvalStatusId Int?
+  categoryId       Int
   productName      String   @db.VarChar(256)
   goal             Int
   deadline         DateTime
@@ -90,12 +91,33 @@ model Product {
   creator        Creator         @relation(fields: [creatorId], references: [id])
   productStatus  ProductStatus?  @relation(fields: [productStatusId], references: [id])
   approvalStatus ApprovalStatus? @relation(fields: [approvalStatusId], references: [id])
+  category       CategoryType    @relation(fields: [categoryId], references: [id])
 
   productMilestones ProductMilestone[]
   productTiers      ProductTier[]
   supportProducts   SupportProduct[]
   webProfits        WebProfit[]
   comments          Comment[]
+}
+
+model CategoryType {
+  id       Int              @id @default(autoincrement())
+  category CategoryTypeEnum
+
+  products Product[]
+}
+
+enum CategoryTypeEnum {
+  ART
+  COMICS
+  CRAFTS
+  DANCE
+  DESIGN
+  FASHION
+  FILM
+  GAMES
+  MUSIC
+  TECHNOLOGY
 }
 
 model ProductStatus {
@@ -116,7 +138,7 @@ model ProductMilestone {
   milestoneRankId    Int
   approvalStatusId   Int
   milestoneDetail    String   @db.Text
-  evidencetextDetail String?  @db.Text
+  evidenceTextDetail String?  @db.Text
   evidenceImage      String?
   createdAt          DateTime @default(now()) @db.Timestamp(0)
   updatedAt          DateTime @updatedAt @db.Timestamp(0)

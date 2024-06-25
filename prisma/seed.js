@@ -10,6 +10,7 @@ const { productStatusTypeData } = require("./mocks/product-status-type-data");
 const { approvalStatusTypeData } = require("./mocks/approval-status-type-data");
 const { creatorData } = require("./mocks/creator-data");
 const { adminData } = require("./mocks/admin-data");
+const { categoryData } = require("./mocks/category-data");
 
 const prisma = new PrismaClient();
 
@@ -23,5 +24,6 @@ const initialRun = async () => {
   await prisma.tierRank.createMany({ data: tierRankData });
   await prisma.approvalStatus.createMany({ data: approvalStatusTypeData });
   await prisma.creator.createMany({ data: creatorData });
+  await prisma.categoryType.createMany({ data: categoryData });
 };
 initialRun();

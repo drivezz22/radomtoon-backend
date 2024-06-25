@@ -82,9 +82,7 @@ authController.creatorRegister = async (req, res, next) => {
 
 authController.getCreatorApproval = tryCatch(async (req, res, next) => {
   const existCreator = await creatorService.findAllCreatorPending();
-  res
-    .status(200)
-    .json({ message: "This creator is approved", creatorApprovalList: existCreator });
+  res.status(200).json({ creatorApprovalList: existCreator });
 });
 
 authController.updateCreatorApproval = tryCatch(async (req, res, next) => {

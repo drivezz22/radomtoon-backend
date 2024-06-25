@@ -48,7 +48,9 @@ productService.getAllProductByCreatorId = (creatorId) =>
 
 productService.getAllProductForAdmin = () =>
   prisma.product.findMany({
-    where: { approvalStatusId: APPROVAL_STATUS_ID.SUCCESS },
+    where: {
+      approvalStatusId: { in: [APPROVAL_STATUS_ID.FAILED, APPROVAL_STATUS_ID.SUCCESS] },
+    },
     include: { webProfits: true },
   });
 
@@ -69,4 +71,8 @@ productService.passApproval = (id) =>
     where: { id },
   });
 
+productService.getPendingApprovalProduct = () =>
+  prisma.product.findMany({
+    where: { approvalStatusId: APPROVAL_STATUS_ID.PENDING },
+  });
 module.exports = productService;

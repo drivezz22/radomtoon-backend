@@ -73,7 +73,6 @@ productController.createProduct = tryCatch(async (req, res, next) => {
     const milestoneData = {
       productId: productResult.id,
       milestoneRankId: el.rank,
-      approvalStatusId: APPROVAL_STATUS_ID.PENDING,
       milestoneDetail: el.detail,
     };
     return milestoneService.createMilestone(milestoneData);
@@ -175,7 +174,6 @@ productController.updateProduct = tryCatch(async (req, res, next) => {
       const milestoneData = {
         productId: productResult.id,
         milestoneRankId: el.rank,
-        approvalStatusId: APPROVAL_STATUS_ID.PENDING,
         milestoneDetail: el.detail,
       };
       return milestoneService.createMilestone(milestoneData);
@@ -249,6 +247,11 @@ productController.passApproval = tryCatch(async (req, res, next) => {
 
   await productService.passApproval(+productId);
   res.status(200).json({ message: "Pass Approval is updated" });
+});
+
+productController.getPendingApprovalProduct = tryCatch(async (req, res, next) => {
+  const pendingApprovalProduct = await productService.getPendingApprovalProduct();
+  res.status(200).json({ pendingApprovalProduct });
 });
 
 module.exports = productController;

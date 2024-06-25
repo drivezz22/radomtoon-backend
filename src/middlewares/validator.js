@@ -32,3 +32,5 @@ exports.commentValidator = (req, res, next) =>
   validatorWrapper(commentValidateSchema.create, req, res, next);
 exports.milestoneValidator = (req, res, next) =>
   validatorWrapper(milestoneValidateSchema.update, req, res, next);
+exports.failedApprovalMilestoneValidator = (req, res, next) =>
+  validatorWrapper(milestoneValidateSchema.failedApproval, req, res, next);

@@ -7,4 +7,8 @@ milestoneValidateSchema.update = Joi.object({
   evidenceImage: Joi.string().allow("", null),
 });
 
+milestoneValidateSchema.failedApproval = Joi.object({
+  comment: Joi.string().required(),
+});
+
 module.exports = milestoneValidateSchema;

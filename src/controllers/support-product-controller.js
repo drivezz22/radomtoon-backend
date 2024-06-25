@@ -10,12 +10,18 @@ const {
 } = require("../constants");
 const supportProductService = require("../services/support-product-service");
 const productService = require("../services/product-service");
+const { sendEmail } = require("../utils/node-mailer-config");
+const { cancelSupport } = require("../utils/mail-content/cancel-support");
+const { supportProject } = require("../utils/mail-content/support-project");
+const userService = require("../services/user-service");
+const { deliveryMail } = require("../utils/mail-content/delivery");
 
 const supportProductController = {};
 
 supportProductController.createSupportProduct = tryCatch(async (req, res) => {
   const { tierId } = req.params;
   const existTier = await tierService.getTierById(+tierId);
+  const existUser = await userService.findUserById(+req.user.id);
 
   const today = dayjs();
   const deadline = dayjs(existTier.product.deadline);
@@ -54,8 +60,9 @@ supportProductController.createSupportProduct = tryCatch(async (req, res) => {
 
   const totalFund = existTier.price + existTier.product.totalFund;
 
-  await productService.updateFund(existTier.productId, totalFund);
+  await sendEmail(existUser.email, "Support Confirmation", supportProject);
 
+  await productService.updateFund(existTier.productId, totalFund);
   const supportResult = await supportProductService.createSupportProduct(
     supportProductData
   );
@@ -97,8 +104,12 @@ supportProductController.cancelSupport = tryCatch(async (req, res) => {
 
   const totalFund = existSupport.product.totalFund - existSupport.tier.price;
 
+  await sendEmail(
+    existSupport.user.email,
+    "Support Cancellation Confirmation",
+    cancelSupport
+  );
   await productService.updateFund(existSupport.productId, totalFund);
-
   await supportProductService.deleteSupportProductById(existSupport.id);
 
   res.status(204).end();
@@ -110,7 +121,6 @@ supportProductController.updateDelivery = tryCatch(async (req, res) => {
     +supporterId,
     +productId
   );
-
   if (!existSupport) {
     createError({
       message: "This supporter does not support this project",
@@ -144,7 +154,7 @@ supportProductController.updateDelivery = tryCatch(async (req, res) => {
       statusCode: 400,
     });
   }
-
+  await sendEmail(existSupport.user.email, "Delivery", deliveryMail);
   await supportProductService.updateDeliveryById(existSupport.id);
 
   res.status(200).json({ message: "This product has been sent to the supporter" });

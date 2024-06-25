@@ -10,7 +10,7 @@ importers:
     dependencies:
       '@prisma/client':
         specifier: 5.15.1
-        version: 5.15.1(prisma@5.15.1)
+        version: 5.15.1(prisma@5.16.0)
       '@stripe/stripe-js':
         specifier: ^4.0.0
         version: 4.0.0
@@ -50,14 +50,15 @@ importers:
       multer:
         specifier: 1.4.5-lts.1
         version: 1.4.5-lts.1
-      stripe:
-        specifier: ^16.0.0
-        version: 16.0.0
-
       node-cron:
         specifier: ^3.0.3
         version: 3.0.3
-
+      nodemailer:
+        specifier: ^6.9.14
+        version: 6.9.14
+      stripe:
+        specifier: ^16.0.0
+        version: 16.0.0
     devDependencies:
       '@eslint/js':
         specifier: ^9.5.0
@@ -70,7 +71,7 @@ importers:
         version: 15.6.0
       prisma:
         specifier: ^5.15.1
-        version: 5.15.1
+        version: 5.16.0
 
 packages:
 
@@ -135,20 +136,20 @@ packages:
       prisma:
         optional: true
 
-  '@prisma/debug@5.15.1':
-    resolution: {integrity: sha512-NQjdEplhXEcPvf84ghxExC+LD+iTimbg3sZvA3BhybVQIocBEBxFf9GTHhmRVPmjrWoBaYJBVgEEBXZT27JTbQ==}
+  '@prisma/debug@5.16.0':
+    resolution: {integrity: sha512-pfdOGxMShqZKkNNskYB0yXICsqL6rOkQUKNktouUZ9Y9ASd5736+ae2fpzif7onwJiIyEpu/yvOO3rFUbliKTA==}
 
-  '@prisma/engines-version@5.15.1-1.5675a3182f972f1a8f31d16eee6abf4fd54910e3':
-    resolution: {integrity: sha512-7csphKGCG6n/cN1MkT1mJvQ78Ir18IknlYZ8eyEoLKdQBb0HscR/6TyPmzqrMA7Rz01K1KeXqctwAqxtA/lKQg==}
+  '@prisma/engines-version@5.16.0-24.34ace0eb2704183d2c05b60b52fba5c43c13f303':
+    resolution: {integrity: sha512-HkT2WbfmFZ9WUPyuJHhkiADxazHg8Y4gByrTSVeb3OikP6tjQ7txtSUGu9OBOBH0C13dPKN2qqH12xKtHu/Hiw==}
 
-  '@prisma/engines@5.15.1':
-    resolution: {integrity: sha512-1iTRxJEFvpBpEWf2bYiMG6LBBQhX7X+GA5piH+tmPWgc/v+/ElxQf2kjQxby8AErmZqtZkdoKJ7FSRjNjBPE9Q==}
+  '@prisma/engines@5.16.0':
+    resolution: {integrity: sha512-OGvi/GvLX3XwTWQ+k/57kLyHGidQ8rC8zB+Zq9nEE7gegjazyzgLYN9qzfdcCfyI8ilc6IMxOyX4sspwkv98hg==}
 
-  '@prisma/fetch-engine@5.15.1':
-    resolution: {integrity: sha512-mj0wfsJ+mAdDp1ynT2JKxAXa+CoYMT267qF7g2Uv+oaVTI2CMfGWouMARht8T2QLTgl+gpXSFTwIYbcR+oWEtw==}
+  '@prisma/fetch-engine@5.16.0':
+    resolution: {integrity: sha512-8C8y6J9eWRl+R/aO3vQ2HlmM9IbjAmrZaaEAdC0OJfG3CHvbTOcL7VRY6CEUKo8RwZ8bdATOePaSMS634fHWgw==}
 
-  '@prisma/get-platform@5.15.1':
-    resolution: {integrity: sha512-oFccp7bYys+ZYkmtYzjR+0cRrGKvSuF+h5QhSkyEsYQ9kzJzQRvuWt2SiHRPt8xOQ4MTmujM+bP5uOexnnAHdQ==}
+  '@prisma/get-platform@5.16.0':
+    resolution: {integrity: sha512-ynp2jAYfYdd7OObX+uWaFRpvhPVmpF0nsRMhbrWdVVUj39q3Zr8dGz5WDj2g+BTUE++u1T1Am3RyM3PBQdDZXA==}
 
   '@sideway/address@4.1.5':
     resolution: {integrity: sha512-IqO/DUQHUkPeixNQ8n0JA6102hT9CmaljNTPmQ1u8MEhBo/R4Q8eKLN/vGZxuebwOroDB4cbpjheD4+/sKFK4Q==}
@@ -708,20 +709,13 @@ packages:
     resolution: {integrity: sha512-hkQtlCqf2f67v+GDlR9DImH1Bu/DxA/yNR7EmnbxCgxYgm4u7rLTJw8LYJdttHOl+H+++Fv0SQF7PgXAtqkfVg==}
     engines: {node: '>= 0.6'}
 
-
   bytes@3.1.2:
     resolution: {integrity: sha512-/Nf7TyzTx6S3yRJObOAV7956r8cr2+Oj8AC5dt8wSP3BQAoeX58NoHyCU8P8zGkNXStjTSi6fzO6F0pBdcYbEg==}
     engines: {node: '>= 0.8'}
 
   cache-base@0.8.5:
     resolution: {integrity: sha512-19t0n7xdoVr5Q08+6sF85YZ9VuvbpVFq5JLm0gcsRmCvTO1Y3duTJGMaOQYf14Ras4o6dEnvoqvjdrUK1tNtgg==}
-
-  node-cron@3.0.3:
-    resolution: {integrity: sha512-dOal67//nohNgYWb+nWmg5dkFdIwDm8EpeGYMekPMrngV3637lqnX0lbUcCtgibHTz6SEz7DAIjKvKDFYCnO1A==}
-    engines: {node: '>=6.0.0'}
-
-  object-assign@4.1.1:
-    resolution: {integrity: sha512-rJgTQnkUnH1sFw8yT6VSU3zD3sWmu6sZhIseY8VX+GRu3P6F7Fu+JNDoXfklElbLJSnc3FUQHVe4cU5hj+BcUg==}
+    engines: {node: '>=0.10.0'}
 
   cache-base@1.0.1:
     resolution: {integrity: sha512-AKcdTnFSWATd5/GCPRxr2ChwIJ85CeyrEyjRHlKxQ56d4XJMGym0uAiKn0xbLOGOl3+yRpOTi484dVCEc5AUzQ==}
@@ -2294,6 +2288,14 @@ packages:
   no-case@2.3.2:
     resolution: {integrity: sha512-rmTZ9kz+f3rCvK2TD1Ue/oZlns7OGoIWP4fc3llxxRXlOkHKoWPPWJOfFYpITabSow43QJbRIoHQXtt10VldyQ==}
 
+  node-cron@3.0.3:
+    resolution: {integrity: sha512-dOal67//nohNgYWb+nWmg5dkFdIwDm8EpeGYMekPMrngV3637lqnX0lbUcCtgibHTz6SEz7DAIjKvKDFYCnO1A==}
+    engines: {node: '>=6.0.0'}
+
+  nodemailer@6.9.14:
+    resolution: {integrity: sha512-Dobp/ebDKBvz91sbtRKhcznLThrKxKt97GI2FAlAyy+fk19j73Uz3sBXolVtmcXjaorivqsbbbjDY+Jkt4/bQA==}
+    engines: {node: '>=6.0.0'}
+
   noncharacters@1.1.0:
     resolution: {integrity: sha512-U69XzMNq7UQXR27xT17tkQsHPsLc+5W9yfXvYzVCwFxghVf+7VttxFnCKFMxM/cHD+/QIyU009263hxIIurj4g==}
     engines: {node: '>=0.10.0'}
@@ -2331,8 +2333,9 @@ packages:
     resolution: {integrity: sha512-79LYn6VAb63zgtmAteVOWo9Vdj71ZVBy3Pbse+VqxDpEP83XuujMrGqHIwAXJ5I/aM0zU7dIyIAhifVTPrNItQ==}
     engines: {node: '>=0.10.0'}
 
-  object-inspect@1.13.1:
-    resolution: {integrity: sha512-5qoj1RUiKOMsCCNLV1CBiPYE10sziTsnmNxkAI/rZhiD63CF7IqdFGC/XzjWjpSgLf0LxXX3bDFIh0E18f6UhQ==}
+  object-inspect@1.13.2:
+    resolution: {integrity: sha512-IRZSRuzJiynemAXPYtPe5BoI/RESNYR7TYm50MC5Mqbd3Jmw5y790sErYw3V6SryFJD64b74qQQs9wn5Bg/k3g==}
+    engines: {node: '>= 0.4'}
 
   object-visit@0.3.4:
     resolution: {integrity: sha512-6QNyX7uTuwqxP7pmDBqgBDKdmZws1rXriUyXM5KG6+7J0aYRuuAGoc636IGdLzgOL77WUwL+EpoTJrEHwWsyOA==}
@@ -2538,8 +2541,8 @@ packages:
     resolution: {integrity: sha512-BwYVCPtnSq3nIGDK2rgwZTN2ClhBQmnG8pudrXIfGBwuMutIBj/W7wm/jz1WCHl/Kk2Q5i1Am1uD2Q74oPyBCw==}
     engines: {node: '>=0.10.0'}
 
-  prisma@5.15.1:
-    resolution: {integrity: sha512-pYsUVpTlYvZ6mWvZKDv9rKdUa7tlfSUJY1CVtgb8Had1pHbIm9fr1MBASccr5XnSuCUrjnvKhWNwgSYy6aCajA==}
+  prisma@5.16.0:
+    resolution: {integrity: sha512-T1ZWJT/vgzp3rtRmd1iCSnPPsgOItXnnny+/cfpHraowiBEvUMD2pEI6yEOL6CP2EelTmq4wKDbXbYucy4Fd+A==}
     engines: {node: '>=16.13'}
     hasBin: true
 
@@ -2572,6 +2575,10 @@ packages:
 
   qs@6.11.0:
     resolution: {integrity: sha512-MvjoMCJwEarSbUYk5O+nmoSzSutSsTwF85zcHPQ9OrlFoZOYIjaqBAJIqIXjptyD5vThxGq52Xu/MaJzRkIk4Q==}
+    engines: {node: '>=0.6'}
+
+  qs@6.12.1:
+    resolution: {integrity: sha512-zWmv4RSuB9r2mYQw3zxQuHWeU+42aKi1wWig/j4ele4ygELZ7PEO6MM7rim9oAQH2A5MWfsAVf/jPvTPgCbvUQ==}
     engines: {node: '>=0.6'}
 
   question-cache@0.4.0:
@@ -3180,6 +3187,10 @@ packages:
     resolution: {integrity: sha512-pMZTvIkT1d+TFGvDOqodOclx0QWkkgi6Tdoa8gC8ffGAAqz9pzPTZWAybbsHHoED/ztMtkv/VoYTYyShUn81hA==}
     engines: {node: '>= 0.4.0'}
 
+  uuid@8.3.2:
+    resolution: {integrity: sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==}
+    hasBin: true
+
   vali-date@1.0.0:
     resolution: {integrity: sha512-sgECfZthyaCKW10N0fm27cg8HYTFK5qMWgypqkXMQ4Wbl/zZKx7xZICgcoxIIE+WFAP/MBL2EFwC/YvLxw3Zeg==}
     engines: {node: '>=0.10.0'}
@@ -3321,30 +3332,30 @@ snapshots:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.17.1
 
-  '@prisma/client@5.15.1(prisma@5.15.1)':
+  '@prisma/client@5.15.1(prisma@5.16.0)':
     optionalDependencies:
-      prisma: 5.15.1
+      prisma: 5.16.0
 
-  '@prisma/debug@5.15.1': {}
+  '@prisma/debug@5.16.0': {}
 
-  '@prisma/engines-version@5.15.1-1.5675a3182f972f1a8f31d16eee6abf4fd54910e3': {}
+  '@prisma/engines-version@5.16.0-24.34ace0eb2704183d2c05b60b52fba5c43c13f303': {}
 
-  '@prisma/engines@5.15.1':
+  '@prisma/engines@5.16.0':
     dependencies:
-      '@prisma/debug': 5.15.1
-      '@prisma/engines-version': 5.15.1-1.5675a3182f972f1a8f31d16eee6abf4fd54910e3
-      '@prisma/fetch-engine': 5.15.1
-      '@prisma/get-platform': 5.15.1
+      '@prisma/debug': 5.16.0
+      '@prisma/engines-version': 5.16.0-24.34ace0eb2704183d2c05b60b52fba5c43c13f303
+      '@prisma/fetch-engine': 5.16.0
+      '@prisma/get-platform': 5.16.0
 
-  '@prisma/fetch-engine@5.15.1':
+  '@prisma/fetch-engine@5.16.0':
     dependencies:
-      '@prisma/debug': 5.15.1
-      '@prisma/engines-version': 5.15.1-1.5675a3182f972f1a8f31d16eee6abf4fd54910e3
-      '@prisma/get-platform': 5.15.1
+      '@prisma/debug': 5.16.0
+      '@prisma/engines-version': 5.16.0-24.34ace0eb2704183d2c05b60b52fba5c43c13f303
+      '@prisma/get-platform': 5.16.0
 
-  '@prisma/get-platform@5.15.1':
+  '@prisma/get-platform@5.16.0':
     dependencies:
-      '@prisma/debug': 5.15.1
+      '@prisma/debug': 5.16.0
 
   '@sideway/address@4.1.5':
     dependencies:
@@ -5879,14 +5890,6 @@ snapshots:
 
   kind-of@6.0.3: {}
 
-  uuid@8.3.2:
-    resolution: {integrity: sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==}
-    hasBin: true
-
-  vary@1.1.2:
-    resolution: {integrity: sha512-BNGbWLfd0eUPabhkXUVm0j8uuvREyTh5ovRa/dyow/BqAbZJyC+5fU+IzQOzmAKzYqYRAISoRhdQr3eIZ/PXqg==}
-    engines: {node: '>= 0.8'}
-
   latest-version@3.1.0:
     dependencies:
       package-json: 4.0.1
@@ -6362,6 +6365,12 @@ snapshots:
     dependencies:
       lower-case: 1.1.4
 
+  node-cron@3.0.3:
+    dependencies:
+      uuid: 8.3.2
+
+  nodemailer@6.9.14: {}
+
   noncharacters@1.1.0: {}
 
   normalize-path@2.1.1:
@@ -6413,7 +6422,7 @@ snapshots:
       define-property: 0.2.5
       kind-of: 3.2.2
 
-  object-inspect@1.13.1: {}
+  object-inspect@1.13.2: {}
 
   object-visit@0.3.4:
     dependencies:
@@ -6629,9 +6638,9 @@ snapshots:
       is-number: 2.1.0
       nanoseconds: 0.1.0
 
-  prisma@5.15.1:
+  prisma@5.16.0:
     dependencies:
-      '@prisma/engines': 5.15.1
+      '@prisma/engines': 5.16.0
 
   process-nextick-args@2.0.1: {}
 
@@ -6653,6 +6662,10 @@ snapshots:
   q@1.5.1: {}
 
   qs@6.11.0:
+    dependencies:
+      side-channel: 1.0.6
+
+  qs@6.12.1:
     dependencies:
       side-channel: 1.0.6
 
@@ -6783,15 +6796,7 @@ snapshots:
       pify: 3.0.0
       safe-buffer: 5.2.1
 
-
   read-file@0.2.0: {}
-
-  node-cron@3.0.3:
-    dependencies:
-      uuid: 8.3.2
-
-  object-assign@4.1.1: {}
-
 
   readable-stream@1.0.34:
     dependencies:
@@ -7066,7 +7071,7 @@ snapshots:
       call-bind: 1.0.7
       es-errors: 1.3.0
       get-intrinsic: 1.2.4
-      object-inspect: 1.13.1
+      object-inspect: 1.13.2
 
   signal-exit@3.0.7: {}
 
@@ -7197,7 +7202,7 @@ snapshots:
   stripe@16.0.0:
     dependencies:
       '@types/node': 20.14.8
-      qs: 6.11.0
+      qs: 6.12.1
 
   success-symbol@0.1.0: {}
 
@@ -7463,8 +7468,9 @@ snapshots:
 
   utils-merge@1.0.1: {}
 
-  vali-date@1.0.0: {}
   uuid@8.3.2: {}
+
+  vali-date@1.0.0: {}
 
   vary@1.1.2: {}
 

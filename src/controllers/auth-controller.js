@@ -9,6 +9,10 @@ const fs = require("fs-extra");
 const tryCatch = require("../utils/try-catch-wrapper");
 const createError = require("../utils/create-error");
 const adminService = require("../services/admin-service");
+const { sendEmail } = require("../utils/node-mailer-config");
+const { emailApproval } = require("../utils/mail-content/email-approve");
+const { emailReject } = require("../utils/mail-content/email-reject");
+const { supportRegisterMail } = require("../utils/mail-content/supporter-register");
 
 const authController = {};
 
@@ -44,11 +48,41 @@ const checkUserExistence = async (email, phone) => {
   }
 };
 
+const handleApproval = async (req, res, status) => {
+  const { creatorId } = req.params;
+  const existCreator = await creatorService.findUserById(+creatorId);
+
+  if (!existCreator) {
+    throw createError({
+      message: "No this creator Id in DB",
+      statusCode: 400,
+    });
+  }
+
+  if (existCreator.isCreatorAcceptId === IS_CREATOR_ACCEPT_STATUS.ACCEPTED) {
+    throw createError({
+      message: "This creator account is already accepted",
+      statusCode: 400,
+    });
+  }
+
+  if (status === "approve") {
+    await sendEmail(existCreator.email, "Creator Registration Successful", emailApproval);
+    await creatorService.approveCreatorById(+creatorId);
+    res.status(200).json({ message: "This creator is approved" });
+  } else if (status === "reject") {
+    await sendEmail(existCreator.email, "Creator Registration Unsuccessful", emailReject);
+    await creatorService.rejectCreatorById(+creatorId);
+    res.status(200).json({ message: "This creator is rejected" });
+  }
+};
+
 authController.supporterRegister = tryCatch(async (req, res, next) => {
   const data = req.input;
   await checkUserExistence(data?.email, data?.phone);
 
   data.password = await hashService.hash(data.password);
+  await sendEmail(data?.email, "Supporter Registration Successful", supportRegisterMail);
   await userService.createUser(data);
   res.status(201).json({ message: "User is created" });
 });
@@ -85,30 +119,13 @@ authController.getCreatorApproval = tryCatch(async (req, res) => {
   res.status(200).json({ creatorApprovalList: existCreator });
 });
 
-authController.updateCreatorApproval = tryCatch(async (req, res) => {
-  const { creatorId } = req.params;
-
-  const existCreator = await creatorService.findUserById(+creatorId);
-
-  if (!existCreator) {
-    createError({
-      message: "No this creator Id in DB",
-      statusCode: 400,
-    });
-  }
-
-  if (existCreator.isCreatorAcceptId === IS_CREATOR_ACCEPT_STATUS.ACCEPTED) {
-    createError({
-      message: "This creator account is already accepted",
-      statusCode: 400,
-    });
-  }
-
-  await creatorService.approveCreatorById(+creatorId);
-
-  res.status(200).json({ message: "This creator is approved" });
+authController.passApproval = tryCatch(async (req, res) => {
+  await handleApproval(req, res, "approve");
 });
 
+authController.failedApproval = tryCatch(async (req, res) => {
+  await handleApproval(req, res, "reject");
+});
 authController.login = tryCatch(async (req, res) => {
   const data = req.input;
   const [existSupporterEmail, existCreatorEmail, existAdminEmail] = await Promise.all([

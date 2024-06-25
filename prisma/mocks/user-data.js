@@ -3,7 +3,7 @@ const password = bcrypt.hashSync("123456");
 
 module.exports.userData = [
   {
-    email: "Johndoe@mail.com",
+    email: "radomtoon4@outlook.com",
     firstName: "John",
     lastName: "Doe",
     phone: "0123335598",

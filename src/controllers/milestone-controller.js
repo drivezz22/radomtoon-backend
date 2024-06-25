@@ -12,6 +12,10 @@ const fs = require("fs-extra");
 const tryCatch = require("../utils/try-catch-wrapper");
 const productService = require("../services/product-service");
 const webProfitService = require("../services/web-profit-service");
+const { sendEmail } = require("../utils/node-mailer-config");
+const { milestoneApproval } = require("../utils/mail-content/milestone-approve");
+const { milestoneReject } = require("../utils/mail-content/milestone-reject");
+const { comment } = require("../models/prisma");
 
 const milestoneController = {};
 
@@ -45,6 +49,25 @@ const checkMilestoneExistence = (existMilestone) => {
   }
 };
 
+const checkUnfinishedMilestones = async (existMilestone) => {
+  const milestoneByProductId = await milestoneService.getMilestoneByProductId(
+    existMilestone.productId
+  );
+
+  const unfinishedPrevMilestoneTier = milestoneByProductId.filter(
+    (el) =>
+      el.milestoneRankId < existMilestone.milestoneRankId &&
+      el.approvalStatusId !== APPROVAL_STATUS_ID.SUCCESS
+  );
+
+  if (unfinishedPrevMilestoneTier.length > 0) {
+    createError({
+      message: "Previous milestones are not finished",
+      statusCode: 400,
+    });
+  }
+};
+
 milestoneController.updateMilestone = async (req, res, next) => {
   try {
     const { milestoneId } = req.params;
@@ -52,27 +75,11 @@ milestoneController.updateMilestone = async (req, res, next) => {
     const existMilestone = await milestoneService.getMilestoneById(+milestoneId);
 
     checkMilestoneExistence(existMilestone);
+    await checkUnfinishedMilestones(existMilestone);
 
     if (!existMilestone.evidenceImage && !req.file) {
       createError({
         message: "No image in DB and no evidence image in data",
-        statusCode: 400,
-      });
-    }
-
-    const milestoneByProductId = await milestoneService.getMilestoneByProductId(
-      existMilestone.productId
-    );
-
-    const unfinishedPrevMilestoneTier = milestoneByProductId.filter(
-      (el) =>
-        el.milestoneRankId < existMilestone.milestoneRankId &&
-        el.approvalStatusId !== APPROVAL_STATUS_ID.SUCCESS
-    );
-
-    if (unfinishedPrevMilestoneTier.length > 0) {
-      createError({
-        message: "Previous milestones are not finished",
         statusCode: 400,
       });
     }
@@ -104,17 +111,22 @@ milestoneController.updateMilestone = async (req, res, next) => {
 
 milestoneController.failApproval = tryCatch(async (req, res) => {
   const { milestoneId } = req.params;
-  const data = req.body;
+  const { comment } = req.body;
 
   const existMilestone = await milestoneService.getMilestoneById(+milestoneId);
 
   checkMilestoneExistence(existMilestone);
+  await checkUnfinishedMilestones(existMilestone);
+
+  await sendEmail(
+    existMilestone.product.creator.email,
+    `Milestone ${existMilestone.milestoneRankId} Rejected`,
+    milestoneReject(existMilestone.milestoneRankId, comment)
+  );
 
   await milestoneService.failApproval(+milestoneId);
 
-  res
-    .status(200)
-    .json({ message: "fail approval in this milestone", comment: data.comment });
+  res.status(200).json({ message: "fail approval in this milestone" });
 });
 
 milestoneController.getPendingApprovalMilestone = tryCatch(async (req, res) => {
@@ -127,6 +139,13 @@ milestoneController.passApproval = tryCatch(async (req, res) => {
 
   const existMilestone = await milestoneService.getMilestoneById(+milestoneId);
   checkMilestoneExistence(existMilestone);
+  await checkUnfinishedMilestones(existMilestone);
+
+  await sendEmail(
+    existMilestone.product.creator.email,
+    `Milestone ${existMilestone.milestoneRankId} Approved`,
+    milestoneApproval(existMilestone.milestoneRankId)
+  );
 
   const MilestonePercent = MILESTONE_PERCENT_PAYMENT[existMilestone.milestoneRankId];
   const totalFund = existMilestone.product.totalFund * (1 - MilestonePercent);

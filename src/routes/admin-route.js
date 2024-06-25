@@ -13,8 +13,12 @@ const adminRouter = express.Router();
 
 adminRouter.get("/register/waiting-approval/", authController.getCreatorApproval);
 adminRouter.post(
-  "/register/creator-approve/:creatorId",
-  authController.updateCreatorApproval
+  "/register/creator/:creatorId/pass-approval",
+  authController.passApproval
+);
+adminRouter.post(
+  "/register/creator/:creatorId/failed-approval",
+  authController.failedApproval
 );
 
 adminRouter.get("/product/all-project", productController.getAllProductForAdmin);
@@ -24,7 +28,7 @@ adminRouter.patch(
   productController.failApproval
 );
 adminRouter.patch("/product/:productId/pass-approval", productController.passApproval);
-adminRouter.patch("/milestone/:milestoneId/pass-approval");
+
 adminRouter.patch(
   "/milestone/:milestoneId/failed-approval",
   failedApprovalMilestoneValidator,
@@ -34,13 +38,12 @@ adminRouter.patch(
   "/milestone/:milestoneId/pass-approval",
   milestoneController.passApproval
 );
-
 adminRouter.get(
   "/milestone/waiting-approval",
   milestoneController.getPendingApprovalMilestone
 );
-adminRouter.get("/product/waiting-approval", productController.getPendingApprovalProduct);
 
+adminRouter.get("/product/waiting-approval", productController.getPendingApprovalProduct);
 adminRouter.get("/stat/admin-stat", statController.getAdminStat);
 
 module.exports = adminRouter;

@@ -17,6 +17,7 @@ productService.findProductById = (productId) =>
     where: {
       id: productId,
     },
+    include: { creator: true },
   });
 
 productService.deleteProductById = (id) => prisma.product.deleteMany({ where: { id } });
@@ -78,7 +79,10 @@ productService.updateAvailableFund = (id, updateFund) =>
   prisma.product.update({ data: { availableFund: updateFund }, where: { id } });
 
 productService.getPendingProduct = () =>
-  prisma.product.findMany({ where: { productStatusId: PRODUCT_STATUS_ID.PENDING } });
+  prisma.product.findMany({
+    where: { productStatusId: PRODUCT_STATUS_ID.PENDING },
+    include: { supportProducts: { include: { user: true } } },
+  });
 
 productService.updateSuccessOverDeadline = (productIdList) =>
   prisma.product.updateMany({

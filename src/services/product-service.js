@@ -70,4 +70,11 @@ productService.getPendingApprovalProduct = () =>
   prisma.product.findMany({
     where: { approvalStatusId: APPROVAL_STATUS_ID.PENDING },
   });
+
+productService.updateFund = (id, updateFund) =>
+  prisma.product.update({ data: { totalFund: updateFund }, where: { id } });
+
+productService.updateAvailableFund = (id, updateFund) =>
+  prisma.product.update({ data: { availableFund: updateFund }, where: { id } });
+
 module.exports = productService;

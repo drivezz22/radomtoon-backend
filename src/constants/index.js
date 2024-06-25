@@ -73,3 +73,18 @@ exports.CATEGORIES_TYPE_ID = {
 };
 
 exports.MIN_DEADLINE_DAYS = 15;
+
+exports.DELIVERY_STATUS_ID = {
+  PENDING: 1,
+  DELIVERED: 2,
+};
+
+exports.MILESTONE_RANK_MUST_PASS = [1, 2];
+
+exports.MILESTONE_PERCENT_PAYMENT = {
+  1: 0.4,
+  2: 0.4,
+  3: 0.2,
+};
+
+exports.WEBSITE_PERCENT_PROFIT = 0.02;

@@ -84,7 +84,7 @@ model Product {
   deadline         DateTime
   story            String   @db.MediumText
   totalFund        Int      @default(0)
-  availableFund    Int      @default(0)
+  availableFund    Decimal  @default(0)
   createdAt        DateTime @default(now()) @db.Timestamp(0)
   updatedAt        DateTime @updatedAt @db.Timestamp(0)
 
@@ -180,15 +180,15 @@ model ProductTier {
   price      Int
   tierDetail String @db.Text
 
-  product  Product  @relation(fields: [productId], references: [id])
-  tierRank TierRank @relation(fields: [tierRankId], references: [id])
+  product         Product          @relation(fields: [productId], references: [id])
+  tierRank        TierRank         @relation(fields: [tierRankId], references: [id])
+  supportProducts SupportProduct[]
 }
 
 model TierRank {
-  id              Int              @id @default(autoincrement())
-  tier            TierRankEnum
-  productTiers    ProductTier[]
-  supportProducts SupportProduct[]
+  id           Int           @id @default(autoincrement())
+  tier         TierRankEnum
+  productTiers ProductTier[]
 }
 
 enum TierRankEnum {
@@ -209,7 +209,7 @@ model SupportProduct {
 
   user           User           @relation(fields: [userId], references: [id])
   product        Product        @relation(fields: [productId], references: [id])
-  tier           TierRank       @relation(fields: [tierId], references: [id])
+  tier           ProductTier    @relation(fields: [tierId], references: [id])
   deliveryStatus deliveryStatus @relation(fields: [deliveryStatusId], references: [id])
 }
 
@@ -226,6 +226,6 @@ enum deliveryStatusEnum {
 
 model WebProfit {
   productId   Int     @id
-  totalProfit Int
+  totalProfit Decimal
   product     Product @relation(fields: [productId], references: [id])
 }

@@ -7,6 +7,7 @@ productValidateSchema.createProduct = Joi.object({
   goal: Joi.number().required(),
   deadline: Joi.date().required(),
   story: Joi.string().required(),
+  categoryId: Joi.number().integer().min(1).max(10).required(),
   milestoneDetailList: Joi.array().length(3).required().items(Joi.object()),
 });
 
@@ -15,6 +16,7 @@ productValidateSchema.updateProduct = Joi.object({
   goal: Joi.number().allow(null),
   deadline: Joi.date().allow(null),
   story: Joi.string().allow("", null),
+  categoryId: Joi.number().integer().min(1).max(10).allow(null),
   milestoneDetailList: Joi.array().allow(null),
 });
 

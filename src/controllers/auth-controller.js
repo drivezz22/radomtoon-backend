@@ -1,8 +1,4 @@
-const {
-  IDENTITY_IMAGE_DIR,
-  IS_CREATOR_ACCEPT_STATUS,
-  USER_ROLE,
-} = require("../constants");
+const { IMAGE_DIR, IS_CREATOR_ACCEPT_STATUS, USER_ROLE } = require("../constants");
 const creatorService = require("../services/creator-service");
 const hashService = require("../services/hash-service");
 const jwtService = require("../services/jwt-service");
@@ -80,15 +76,13 @@ authController.creatorRegister = async (req, res, next) => {
   } catch (err) {
     next(err);
   } finally {
-    fs.emptyDirSync(IDENTITY_IMAGE_DIR);
+    fs.emptyDirSync(IMAGE_DIR);
   }
 };
 
 authController.getCreatorApproval = tryCatch(async (req, res, next) => {
   const existCreator = await creatorService.findAllCreatorPending();
-  res
-    .status(200)
-    .json({ message: "This creator is approved", creatorApprovalList: existCreator });
+  res.status(200).json({ creatorApprovalList: existCreator });
 });
 
 authController.updateCreatorApproval = tryCatch(async (req, res, next) => {

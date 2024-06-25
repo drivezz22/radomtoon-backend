@@ -47,7 +47,14 @@ const validateDeadline = (deadline) => {
 };
 
 productController.createProduct = tryCatch(async (req, res, next) => {
-  const { productName, goal, deadline, story, milestoneDetailList = [] } = req.body;
+  const {
+    productName,
+    goal,
+    deadline,
+    story,
+    categoryId,
+    milestoneDetailList = [],
+  } = req.body;
   validateDeadline(deadline);
 
   const productData = {
@@ -56,6 +63,7 @@ productController.createProduct = tryCatch(async (req, res, next) => {
     goal: +goal,
     deadline: new Date(deadline),
     story,
+    categoryId,
   };
   const productResult = await productService.createProduct(productData);
 
@@ -65,7 +73,6 @@ productController.createProduct = tryCatch(async (req, res, next) => {
     const milestoneData = {
       productId: productResult.id,
       milestoneRankId: el.rank,
-      approvalStatusId: APPROVAL_STATUS_ID.PENDING,
       milestoneDetail: el.detail,
     };
     return milestoneService.createMilestone(milestoneData);
@@ -101,7 +108,14 @@ productController.deleteProduct = tryCatch(async (req, res, next) => {
 });
 
 productController.updateProduct = tryCatch(async (req, res, next) => {
-  const { productName, goal, deadline, story, milestoneDetailList = [] } = req.body;
+  const {
+    productName,
+    goal,
+    deadline,
+    story,
+    categoryId,
+    milestoneDetailList = [],
+  } = req.body;
   const { productId } = req.params;
   const existProduct = await productService.findProductByCreatorIdAndProductId(
     req.user.id,
@@ -138,6 +152,7 @@ productController.updateProduct = tryCatch(async (req, res, next) => {
     goal: +goal,
     deadline: deadline ? new Date(deadline) : undefined,
     story,
+    categoryId,
   };
 
   const filteredProductData = Object.fromEntries(
@@ -159,7 +174,6 @@ productController.updateProduct = tryCatch(async (req, res, next) => {
       const milestoneData = {
         productId: productResult.id,
         milestoneRankId: el.rank,
-        approvalStatusId: APPROVAL_STATUS_ID.PENDING,
         milestoneDetail: el.detail,
       };
       return milestoneService.createMilestone(milestoneData);
@@ -233,6 +247,11 @@ productController.passApproval = tryCatch(async (req, res, next) => {
 
   await productService.passApproval(+productId);
   res.status(200).json({ message: "Pass Approval is updated" });
+});
+
+productController.getPendingApprovalProduct = tryCatch(async (req, res, next) => {
+  const pendingApprovalProduct = await productService.getPendingApprovalProduct();
+  res.status(200).json({ pendingApprovalProduct });
 });
 
 module.exports = productController;

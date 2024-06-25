@@ -84,7 +84,7 @@ model Product {
   deadline         DateTime
   story            String   @db.MediumText
   totalFund        Int      @default(0)
-  availableFund    Decimal  @default(0)
+  availableFund    Int      @default(0)
   createdAt        DateTime @default(now()) @db.Timestamp(0)
   updatedAt        DateTime @updatedAt @db.Timestamp(0)
 
@@ -226,6 +226,6 @@ enum deliveryStatusEnum {
 
 model WebProfit {
   productId   Int     @id
-  totalProfit Decimal
+  totalProfit Int
   product     Product @relation(fields: [productId], references: [id])
 }

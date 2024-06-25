@@ -80,12 +80,12 @@ authController.creatorRegister = async (req, res, next) => {
   }
 };
 
-authController.getCreatorApproval = tryCatch(async (req, res, next) => {
+authController.getCreatorApproval = tryCatch(async (req, res) => {
   const existCreator = await creatorService.findAllCreatorPending();
   res.status(200).json({ creatorApprovalList: existCreator });
 });
 
-authController.updateCreatorApproval = tryCatch(async (req, res, next) => {
+authController.updateCreatorApproval = tryCatch(async (req, res) => {
   const { creatorId } = req.params;
 
   const existCreator = await creatorService.findUserById(+creatorId);
@@ -109,7 +109,7 @@ authController.updateCreatorApproval = tryCatch(async (req, res, next) => {
   res.status(200).json({ message: "This creator is approved" });
 });
 
-authController.login = tryCatch(async (req, res, next) => {
+authController.login = tryCatch(async (req, res) => {
   const data = req.input;
   const [existSupporterEmail, existCreatorEmail, existAdminEmail] = await Promise.all([
     userService.findUserByEmail(data?.email),
@@ -160,7 +160,7 @@ authController.login = tryCatch(async (req, res, next) => {
   res.status(200).json({ accessToken });
 });
 
-authController.getMe = (req, res, next) => {
+authController.getMe = (req, res) => {
   res.status(200).json({ user: req.user });
 };
 

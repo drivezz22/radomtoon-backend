@@ -7,6 +7,7 @@ const {
   failedApprovalMilestoneValidator,
 } = require("../middlewares/validator");
 const milestoneController = require("../controllers/milestone-controller");
+const statController = require("../controllers/stat-controller");
 
 const adminRouter = express.Router();
 
@@ -39,5 +40,7 @@ adminRouter.get(
   milestoneController.getPendingApprovalMilestone
 );
 adminRouter.get("/product/waiting-approval", productController.getPendingApprovalProduct);
+
+adminRouter.get("/stat/admin-stat", statController.getAdminStat);
 
 module.exports = adminRouter;

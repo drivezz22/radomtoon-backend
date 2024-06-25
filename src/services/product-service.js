@@ -92,4 +92,7 @@ productService.updateFailedOverDeadline = (productIdList) =>
     where: { id: { in: productIdList } },
   });
 
+productService.getAllSuccessProject = () =>
+  prisma.product.findMany({ where: { productStatusId: PRODUCT_STATUS_ID.SUCCESS } });
+
 module.exports = productService;

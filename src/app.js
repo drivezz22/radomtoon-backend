@@ -17,6 +17,7 @@ const supportProductRouter = require("./routes/support-product-route");
 const { nodeCron } = require("./utils/cron-job");
 const { checkDeadline } = require("./utils/check-deadline-scheduler");
 const historyRouter = require("./routes/history-route");
+const statRouter = require("./routes/stat-route");
 
 const app = express();
 
@@ -33,8 +34,9 @@ app.use("/comments", authenticate, commentRouter);
 app.use("/milestones", authenticate, creatorAuthenticate, milestoneRouter);
 app.use("/support-products", authenticate, supportProductRouter);
 app.use("/histories", authenticate, historyRouter);
+app.use("/stats", authenticate, statRouter);
 
-// nodeCron("*/10 * * * *", checkDeadline);
+nodeCron("*/10 * * * *", checkDeadline);
 
 
 // feature/payment   ///////////////////////

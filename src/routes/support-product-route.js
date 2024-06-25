@@ -5,11 +5,7 @@ const creatorAuthenticate = require("../middlewares/creator-authenticate");
 
 const supportProductRouter = express.Router();
 
-supportProductRouter.post(
-  "/tier/:tierId",
-  supporterAuthenticate,
-  supportProductController.createSupportProduct
-);
+supportProductRouter.post("/tier/:tierId", supportProductController.createSupportProduct);
 
 supportProductRouter.delete(
   "/product/:productId",

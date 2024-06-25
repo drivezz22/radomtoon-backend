@@ -15,7 +15,6 @@ const webProfitService = require("../services/web-profit-service");
 const { sendEmail } = require("../utils/node-mailer-config");
 const { milestoneApproval } = require("../utils/mail-content/milestone-approve");
 const { milestoneReject } = require("../utils/mail-content/milestone-reject");
-const { comment } = require("../models/prisma");
 
 const milestoneController = {};
 

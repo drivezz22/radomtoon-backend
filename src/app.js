@@ -13,6 +13,10 @@ const adminRouter = require("./routes/admin-route");
 const creatorAuthenticate = require("./middlewares/creator-authenticate");
 const commentRouter = require("./routes/comment-route");
 const milestoneRouter = require("./routes/milestone-route");
+const supportProductRouter = require("./routes/support-product-route");
+const { nodeCron } = require("./utils/cron-job");
+const { checkDeadline } = require("./utils/check-deadline-scheduler");
+const historyRouter = require("./routes/history-route");
 
 const app = express();
 
@@ -26,6 +30,10 @@ app.use("/creators", authenticate, creatorAuthenticate, creatorRouter);
 app.use("/products", authenticate, productRouter);
 app.use("/comments", authenticate, commentRouter);
 app.use("/milestones", authenticate, creatorAuthenticate, milestoneRouter);
+app.use("/support-products", authenticate, supportProductRouter);
+app.use("/histories", authenticate, historyRouter);
+
+// nodeCron("*/10 * * * *", checkDeadline);
 
 app.use(notFoundMiddleware);
 app.use(errorMiddleware);

@@ -29,6 +29,11 @@ adminRouter.patch(
   failedApprovalMilestoneValidator,
   milestoneController.failApproval
 );
+adminRouter.patch(
+  "/milestone/:milestoneId/pass-approval",
+  milestoneController.passApproval
+);
+
 adminRouter.get(
   "/milestone/waiting-approval",
   milestoneController.getPendingApprovalMilestone

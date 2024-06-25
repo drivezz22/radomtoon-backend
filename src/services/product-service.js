@@ -24,16 +24,6 @@ productService.deleteProductById = (id) => prisma.product.deleteMany({ where: { 
 productService.updateProductById = (id, data) =>
   prisma.product.update({ data, where: { id } });
 
-productService.getAllProduct = (id, data) =>
-  prisma.product.findMany({
-    data,
-    where: {
-      approvalStatusId: APPROVAL_STATUS_ID.SUCCESS,
-      productStatusId: { not: PRODUCT_STATUS_ID.FAILED },
-    },
-    orderBy: { createdAt: "desc" },
-  });
-
 productService.getAllProduct = () =>
   prisma.product.findMany({
     where: {
@@ -41,10 +31,15 @@ productService.getAllProduct = () =>
       productStatusId: { not: PRODUCT_STATUS_ID.FAILED },
     },
     orderBy: { createdAt: "desc" },
+    include: { productMilestones: true, productTiers: true },
   });
 
 productService.getAllProductByCreatorId = (creatorId) =>
-  prisma.product.findMany({ where: { creatorId }, orderBy: { createdAt: "desc" } });
+  prisma.product.findMany({
+    where: { creatorId },
+    orderBy: { createdAt: "desc" },
+    include: { productMilestones: true, productTiers: true },
+  });
 
 productService.getAllProductForAdmin = () =>
   prisma.product.findMany({
@@ -75,4 +70,26 @@ productService.getPendingApprovalProduct = () =>
   prisma.product.findMany({
     where: { approvalStatusId: APPROVAL_STATUS_ID.PENDING },
   });
+
+productService.updateFund = (id, updateFund) =>
+  prisma.product.update({ data: { totalFund: updateFund }, where: { id } });
+
+productService.updateAvailableFund = (id, updateFund) =>
+  prisma.product.update({ data: { availableFund: updateFund }, where: { id } });
+
+productService.getPendingProduct = () =>
+  prisma.product.findMany({ where: { productStatusId: PRODUCT_STATUS_ID.PENDING } });
+
+productService.updateSuccessOverDeadline = (productIdList) =>
+  prisma.product.updateMany({
+    data: { productStatusId: PRODUCT_STATUS_ID.SUCCESS },
+    where: { id: { in: productIdList } },
+  });
+
+productService.updateFailedOverDeadline = (productIdList) =>
+  prisma.product.updateMany({
+    data: { productStatusId: PRODUCT_STATUS_ID.FAILED },
+    where: { id: { in: productIdList } },
+  });
+
 module.exports = productService;

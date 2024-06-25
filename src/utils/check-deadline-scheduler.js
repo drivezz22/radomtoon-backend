@@ -1,6 +1,5 @@
 const dayjs = require("dayjs");
 const productService = require("../services/product-service");
-const { supportProduct } = require("../models/prisma");
 const supportProductService = require("../services/support-product-service");
 const { sendEmail } = require("./node-mailer-config");
 const { projectFundFailed } = require("./mail-content/project-fund-failed");

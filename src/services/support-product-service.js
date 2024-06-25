@@ -31,4 +31,17 @@ supportProductService.getSupportBySupporterId = (supporterId) =>
     },
   });
 
+supportProductService.getSupportByProductId = (productId) =>
+  prisma.supportProduct.findMany({
+    where: { productId },
+    include: {
+      product: { include: { productStatus: true } },
+      tier: { include: { tierRank: true } },
+      deliveryStatus: true,
+      user: true,
+    },
+  });
+
+supportProductService.getSupport = () => prisma.supportProduct.findMany({});
+
 module.exports = supportProductService;

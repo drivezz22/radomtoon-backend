@@ -7,5 +7,6 @@ webProfitService.findProfitById = (productId) =>
 webProfitService.createProfit = (data) => prisma.webProfit.create({ data });
 webProfitService.updateProfitById = (productId, updateFund) =>
   prisma.webProfit.update({ data: { totalProfit: updateFund }, where: { productId } });
+webProfitService.getAllProfit = () => prisma.webProfit.findMany();
 
 module.exports = webProfitService;

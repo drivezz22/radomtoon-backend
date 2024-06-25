@@ -1,5 +1,4 @@
 const Joi = require("joi");
-const { tierRank } = require("../models/prisma");
 
 const productValidateSchema = {};
 

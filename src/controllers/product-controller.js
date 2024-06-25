@@ -1,35 +1,42 @@
 const dayjs = require("dayjs");
-const { MILESTONE_RANK_ID, APPROVAL_STATUS_ID, USER_ROLE } = require("../constants");
+const {
+  MILESTONE_RANK_ID,
+  APPROVAL_STATUS_ID,
+  USER_ROLE,
+  TIER_RANK_ID,
+  MIN_DEADLINE_DAYS,
+} = require("../constants");
 const milestoneService = require("../services/milestone-service");
 const productService = require("../services/product-service");
 const createError = require("../utils/create-error");
 const tryCatch = require("../utils/try-catch-wrapper");
+const tierService = require("../services/tier-service");
 
 const productController = {};
 
-const validateMilestones = (milestoneDetailList) => {
-  const milestoneRanks = milestoneDetailList.map((el) => el.rank);
-  const milestoneRanksSet = new Set(milestoneRanks);
-  if (milestoneDetailList.length !== Object.values(MILESTONE_RANK_ID).length) {
+const validateUniqueRanks = (detailList, rankKey, rankConstants) => {
+  const ranks = detailList.map((el) => el[rankKey]);
+  const ranksSet = new Set(ranks);
+
+  if (ranksSet.size !== ranks.length) {
     createError({
-      message: "Array length should be 3",
+      message: "Some items have the same rank",
       statusCode: 400,
     });
   }
 
-  if (milestoneRanksSet.size !== milestoneRanks.length) {
+  const isFoundAllRanks = ranks.every((r) => Object.values(rankConstants).includes(r));
+  if (!isFoundAllRanks) {
     createError({
-      message: "Some milestones have the same rank",
+      message: "Incorrect rank",
       statusCode: 400,
     });
   }
 
-  const isFoundAllMilestoneRank = milestoneRanks.every((r) =>
-    Object.values(MILESTONE_RANK_ID).includes(r)
-  );
-  if (!isFoundAllMilestoneRank) {
+  const overMaximumRank = detailList.filter((el) => el[rankKey] > detailList.length);
+  if (overMaximumRank.length > 0) {
     createError({
-      message: "Incorrect milestone rank",
+      message: "Please select rank not over the number of ranks",
       statusCode: 400,
     });
   }
@@ -38,15 +45,15 @@ const validateMilestones = (milestoneDetailList) => {
 const validateDeadline = (deadline) => {
   const today = dayjs(new Date());
   const dateFromDB = dayjs(new Date(deadline));
-  if (dateFromDB.diff(today, "day") < 15) {
+  if (dateFromDB.diff(today, "day") < MIN_DEADLINE_DAYS) {
     createError({
-      message: "Deadline should be more than 15 days",
+      message: `Deadline should be more than ${MIN_DEADLINE_DAYS} days`,
       statusCode: 400,
     });
   }
 };
 
-productController.createProduct = tryCatch(async (req, res, next) => {
+productController.createProduct = tryCatch(async (req, res) => {
   const {
     productName,
     goal,
@@ -54,8 +61,12 @@ productController.createProduct = tryCatch(async (req, res, next) => {
     story,
     categoryId,
     milestoneDetailList = [],
+    tierDetailList = [],
   } = req.body;
+
   validateDeadline(deadline);
+  validateUniqueRanks(milestoneDetailList, "rank", MILESTONE_RANK_ID);
+  validateUniqueRanks(tierDetailList, "tierRankId", TIER_RANK_ID);
 
   const productData = {
     creatorId: req.user.id,
@@ -65,9 +76,8 @@ productController.createProduct = tryCatch(async (req, res, next) => {
     story,
     categoryId,
   };
-  const productResult = await productService.createProduct(productData);
 
-  validateMilestones(milestoneDetailList);
+  const productResult = await productService.createProduct(productData);
 
   const milestonePromises = milestoneDetailList.map((el) => {
     const milestoneData = {
@@ -77,16 +87,30 @@ productController.createProduct = tryCatch(async (req, res, next) => {
     };
     return milestoneService.createMilestone(milestoneData);
   });
+
   const milestoneResult = await Promise.all(milestonePromises);
+
+  const tierPromises = tierDetailList.map((el) => {
+    const tierData = {
+      tierRankId: el.tierRankId,
+      productId: productResult.id,
+      price: el.price,
+      tierDetail: el.tierDetail,
+    };
+    return tierService.createTier(tierData);
+  });
+
+  const tierDetailResult = await Promise.all(tierPromises);
 
   res.status(201).json({
     message: "Product is created",
     productDetail: productResult,
     milestoneDetail: milestoneResult,
+    tierDetail: tierDetailResult,
   });
 });
 
-productController.deleteProduct = tryCatch(async (req, res, next) => {
+productController.deleteProduct = tryCatch(async (req, res) => {
   const { productId } = req.params;
   const existProduct = await productService.findProductByCreatorIdAndProductId(
     req.user.id,
@@ -103,11 +127,12 @@ productController.deleteProduct = tryCatch(async (req, res, next) => {
     });
   }
   await milestoneService.deleteByProductId(+productId);
+  await tierService.deleteByProductId(+productId);
   await productService.deleteProductById(+productId);
   return res.status(204).end();
 });
 
-productController.updateProduct = tryCatch(async (req, res, next) => {
+productController.updateProduct = tryCatch(async (req, res) => {
   const {
     productName,
     goal,
@@ -115,6 +140,7 @@ productController.updateProduct = tryCatch(async (req, res, next) => {
     story,
     categoryId,
     milestoneDetailList = [],
+    tierDetailList = [],
   } = req.body;
   const { productId } = req.params;
   const existProduct = await productService.findProductByCreatorIdAndProductId(
@@ -167,7 +193,7 @@ productController.updateProduct = tryCatch(async (req, res, next) => {
   let milestoneResult = [];
 
   if (milestoneDetailList.length > 0) {
-    validateMilestones(milestoneDetailList);
+    validateUniqueRanks(milestoneDetailList, "rank", MILESTONE_RANK_ID);
     await milestoneService.deleteByProductId(+productId);
 
     const milestonePromises = milestoneDetailList.map((el) => {
@@ -182,74 +208,99 @@ productController.updateProduct = tryCatch(async (req, res, next) => {
   } else {
     milestoneResult = await milestoneService.getMilestoneByProductId(+productId);
   }
+
+  let tierDetailResult = [];
+  if (tierDetailList.length > 0) {
+    validateUniqueRanks(tierDetailList, "tierRankId", TIER_RANK_ID);
+
+    await tierService.deleteByProductId(+productId);
+
+    const tierPromises = tierDetailList.map((el) => {
+      const tierData = {
+        tierRankId: el.tierRankId,
+        productId: productResult.id,
+        price: el.price,
+        tierDetail: el.tierDetail,
+      };
+      return tierService.createTier(tierData);
+    });
+    tierDetailResult = await Promise.all(tierPromises);
+  } else {
+    tierDetailResult = await tierService.getTierByProductId(+productId);
+  }
+
   res.status(200).json({
     message: "Product is updated",
     productDetail: productResult,
     milestoneDetail: milestoneResult,
+    tierDetail: tierDetailResult,
   });
 });
 
-productController.getAllProduct = tryCatch(async (req, res, next) => {
+productController.getAllProduct = tryCatch(async (req, res) => {
   if (req.user.role === USER_ROLE.SUPPORTER) {
     const allProduct = await productService.getAllProduct();
-    res.status(200).json({ productList: allProduct });
-  } else if (req.user.role === USER_ROLE.CREATOR) {
+    return res.status(200).json({ productList: allProduct });
+  }
+
+  if (req.user.role === USER_ROLE.CREATOR) {
     const allProductByCreatorId = await productService.getAllProductByCreatorId(
       req.user.id
     );
-    res.status(200).json({ productList: allProductByCreatorId });
+    return res.status(200).json({ productList: allProductByCreatorId });
   }
 });
 
-productController.getAllProductForAdmin = tryCatch(async (req, res, next) => {
-  console.log("Ssss");
+productController.getAllProductForAdmin = tryCatch(async (req, res) => {
   const allProductForAdmin = await productService.getAllProductForAdmin();
   res.status(200).json({ productList: allProductForAdmin });
 });
 
-productController.failApproval = tryCatch(async (req, res, next) => {
+productController.failApproval = tryCatch(async (req, res) => {
   const { productId } = req.params;
-  const data = req.body;
+  const { comment } = req.body;
+
   const existProduct = await productService.findProductById(+productId);
   if (!existProduct) {
     createError({
-      message: "This product is not exist",
+      message: "This product does not exist",
       statusCode: 400,
     });
   }
 
   if (existProduct.approvalStatusId === APPROVAL_STATUS_ID.SUCCESS) {
     createError({
-      message: "This product is already pass approval",
+      message: "This product has already passed approva",
       statusCode: 400,
     });
   }
   await productService.failApproval(+productId);
-  res.status(200).json({ message: "Fail Approval is updated", comment: data.comment });
+  res.status(200).json({ message: "Approval failure updated", comment });
 });
 
-productController.passApproval = tryCatch(async (req, res, next) => {
+productController.passApproval = tryCatch(async (req, res) => {
   const { productId } = req.params;
+
   const existProduct = await productService.findProductById(+productId);
   if (!existProduct) {
     createError({
-      message: "This product is not exist",
+      message: "This product does not exist",
       statusCode: 400,
     });
   }
 
   if (existProduct.approvalStatusId === APPROVAL_STATUS_ID.SUCCESS) {
     createError({
-      message: "This product is already pass approval",
+      message: "This product is already passed approval",
       statusCode: 400,
     });
   }
 
   await productService.passApproval(+productId);
-  res.status(200).json({ message: "Pass Approval is updated" });
+  res.status(200).json({ message: "Approval success updated" });
 });
 
-productController.getPendingApprovalProduct = tryCatch(async (req, res, next) => {
+productController.getPendingApprovalProduct = tryCatch(async (req, res) => {
   const pendingApprovalProduct = await productService.getPendingApprovalProduct();
   res.status(200).json({ pendingApprovalProduct });
 });

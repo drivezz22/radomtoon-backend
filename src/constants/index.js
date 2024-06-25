@@ -35,6 +35,18 @@ exports.MILESTONE_RANK_ID = {
   RANK3: 3,
 };
 
+exports.TIER_RANK = {
+  RANK1: "RANK1",
+  RANK2: "RANK2",
+  RANK3: "RANK3",
+};
+
+exports.TIER_RANK_ID = {
+  RANK1: 1,
+  RANK2: 2,
+  RANK3: 3,
+};
+
 exports.APPROVAL_STATUS_ID = {
   PENDING: 1,
   FAILED: 2,
@@ -59,3 +71,5 @@ exports.CATEGORIES_TYPE_ID = {
   MUSIC: 9,
   TECHNOLOGY: 10,
 };
+
+exports.MIN_DEADLINE_DAYS = 15;

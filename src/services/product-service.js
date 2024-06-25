@@ -24,16 +24,6 @@ productService.deleteProductById = (id) => prisma.product.deleteMany({ where: { 
 productService.updateProductById = (id, data) =>
   prisma.product.update({ data, where: { id } });
 
-productService.getAllProduct = (id, data) =>
-  prisma.product.findMany({
-    data,
-    where: {
-      approvalStatusId: APPROVAL_STATUS_ID.SUCCESS,
-      productStatusId: { not: PRODUCT_STATUS_ID.FAILED },
-    },
-    orderBy: { createdAt: "desc" },
-  });
-
 productService.getAllProduct = () =>
   prisma.product.findMany({
     where: {
@@ -41,10 +31,15 @@ productService.getAllProduct = () =>
       productStatusId: { not: PRODUCT_STATUS_ID.FAILED },
     },
     orderBy: { createdAt: "desc" },
+    include: { productMilestones: true, productTiers: true },
   });
 
 productService.getAllProductByCreatorId = (creatorId) =>
-  prisma.product.findMany({ where: { creatorId }, orderBy: { createdAt: "desc" } });
+  prisma.product.findMany({
+    where: { creatorId },
+    orderBy: { createdAt: "desc" },
+    include: { productMilestones: true, productTiers: true },
+  });
 
 productService.getAllProductForAdmin = () =>
   prisma.product.findMany({

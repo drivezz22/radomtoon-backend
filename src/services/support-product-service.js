@@ -21,4 +21,14 @@ supportProductService.updateDeliveryById = (id) =>
     where: { id },
   });
 
+supportProductService.getSupportBySupporterId = (supporterId) =>
+  prisma.supportProduct.findMany({
+    where: { userId: supporterId },
+    include: {
+      product: { include: { productStatus: true } },
+      tier: { include: { tierRank: true } },
+      deliveryStatus: true,
+    },
+  });
+
 module.exports = supportProductService;

@@ -77,4 +77,19 @@ productService.updateFund = (id, updateFund) =>
 productService.updateAvailableFund = (id, updateFund) =>
   prisma.product.update({ data: { availableFund: updateFund }, where: { id } });
 
+productService.getPendingProduct = () =>
+  prisma.product.findMany({ where: { productStatusId: PRODUCT_STATUS_ID.PENDING } });
+
+productService.updateSuccessOverDeadline = (productIdList) =>
+  prisma.product.updateMany({
+    data: { productStatusId: PRODUCT_STATUS_ID.SUCCESS },
+    where: { id: { in: productIdList } },
+  });
+
+productService.updateFailedOverDeadline = (productIdList) =>
+  prisma.product.updateMany({
+    data: { productStatusId: PRODUCT_STATUS_ID.FAILED },
+    where: { id: { in: productIdList } },
+  });
+
 module.exports = productService;

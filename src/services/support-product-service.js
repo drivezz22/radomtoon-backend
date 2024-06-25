@@ -6,10 +6,14 @@ const supportProductService = {};
 supportProductService.createSupportProduct = (data) =>
   prisma.supportProduct.create({ data });
 
-supportProductService.getSupportBySupporterIdAndProductId = (supporterId, productId) =>
+supportProductService.getSupportBySupporterIdAndProductId = (userId, productId) =>
   prisma.supportProduct.findFirst({
-    where: { userId: supporterId, productId, deletedAt: null },
-    include: { product: { include: { productMilestones: true } }, tier: true },
+    where: { userId, productId, deletedAt: null },
+    include: {
+      product: { include: { productMilestones: true } },
+      tier: true,
+      user: true,
+    },
   });
 
 supportProductService.deleteSupportProductById = (id) =>
@@ -43,5 +47,10 @@ supportProductService.getSupportByProductId = (productId) =>
   });
 
 supportProductService.getSupport = () => prisma.supportProduct.findMany({});
+supportProductService.findSupporterByProductList = (productIdList) =>
+  prisma.supportProduct.findMany({
+    where: { productId: { in: productIdList }, deletedAt: null },
+    include: { user: true },
+  });
 
 module.exports = supportProductService;

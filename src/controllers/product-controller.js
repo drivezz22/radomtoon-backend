@@ -11,6 +11,9 @@ const productService = require("../services/product-service");
 const createError = require("../utils/create-error");
 const tryCatch = require("../utils/try-catch-wrapper");
 const tierService = require("../services/tier-service");
+const { sendEmail } = require("../utils/node-mailer-config");
+const { projectReject } = require("../utils/mail-content/project-reject");
+const { projectApprove } = require("../utils/mail-content/project-approve");
 
 const productController = {};
 
@@ -274,8 +277,9 @@ productController.failApproval = tryCatch(async (req, res) => {
       statusCode: 400,
     });
   }
+  await sendEmail(existProduct.creator.email, "Project Rejected", projectReject(comment));
   await productService.failApproval(+productId);
-  res.status(200).json({ message: "Approval failure updated", comment });
+  res.status(200).json({ message: "Approval failure updated" });
 });
 
 productController.passApproval = tryCatch(async (req, res) => {
@@ -296,6 +300,7 @@ productController.passApproval = tryCatch(async (req, res) => {
     });
   }
 
+  await sendEmail(existProduct.creator.email, "Project Approved", projectApprove);
   await productService.passApproval(+productId);
   res.status(200).json({ message: "Approval success updated" });
 });

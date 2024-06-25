@@ -1,5 +1,10 @@
 const dayjs = require("dayjs");
 const productService = require("../services/product-service");
+const { supportProduct } = require("../models/prisma");
+const supportProductService = require("../services/support-product-service");
+const { sendEmail } = require("./node-mailer-config");
+const { projectFundFailed } = require("./mail-content/project-fund-failed");
+const { projectFundPass } = require("./mail-content/project-fund-pass");
 
 module.exports.checkDeadline = async () => {
   try {
@@ -22,11 +27,27 @@ module.exports.checkDeadline = async () => {
         .map((product) => product.id);
 
       if (passedProductIds.length > 0) {
+        const supporterList = await supportProductService.findSupporterByProductList(
+          passedProductIds
+        );
+        const emailList = supporterList.map((el) => el.user.email);
+        await sendEmail("_", "Project Success Funding", projectFundPass, emailList);
+
         await productService.updateSuccessOverDeadline(passedProductIds);
         console.log("Updated passed products");
       }
 
       if (failedProductIds.length > 0) {
+        const supporterList = await supportProductService.findSupporterByProductList(
+          failedProductIds
+        );
+        const emailList = supporterList.map((el) => el.user.email);
+        await sendEmail(
+          "_",
+          "Project Cancellation and Refund",
+          projectFundFailed,
+          emailList
+        );
         await productService.updateFailedOverDeadline(failedProductIds);
         console.log("Updated failed products");
       }

@@ -8,6 +8,8 @@ productValidateSchema.createProduct = Joi.object({
   deadline: Joi.date().required(),
   story: Joi.string().required(),
   categoryId: Joi.number().integer().min(1).max(10).required(),
+  productVideo: Joi.string(),
+  productImage: Joi.string().allow("", null),
   milestoneDetailList: Joi.array()
     .length(3)
     .required()
@@ -36,6 +38,8 @@ productValidateSchema.updateProduct = Joi.object({
   deadline: Joi.date().allow(null),
   story: Joi.string().allow("", null),
   categoryId: Joi.number().integer().min(1).max(10).allow(null),
+  productVideo: Joi.string().allow(null),
+  productImage: Joi.string().allow("", null),
   milestoneDetailList: Joi.array()
     .allow(null)
     .items(

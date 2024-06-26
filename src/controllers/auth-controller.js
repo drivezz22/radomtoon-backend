@@ -124,6 +124,9 @@ authController.passApproval = tryCatch(async (req, res) => {
 });
 
 authController.failedApproval = tryCatch(async (req, res) => {
+  const { creatorId } = req.params;
+  const existCreator = await creatorService.findUserById(+creatorId);
+  await uploadService.delete(existCreator.identityImage);
   await handleApproval(req, res, "reject");
 });
 authController.login = tryCatch(async (req, res) => {

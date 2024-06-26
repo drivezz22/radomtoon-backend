@@ -82,6 +82,8 @@ model Product {
   productName      String   @db.VarChar(256)
   goal             Int
   deadline         DateTime
+  productImage     String
+  productVideo     String?
   story            String   @db.MediumText
   totalFund        Int      @default(0)
   availableFund    Int      @default(0)

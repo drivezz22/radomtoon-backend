@@ -14,6 +14,7 @@ const tierService = require("../services/tier-service");
 const { sendEmail } = require("../utils/node-mailer-config");
 const { projectReject } = require("../utils/mail-content/project-reject");
 const { projectApprove } = require("../utils/mail-content/project-approve");
+const uploadService = require("../services/upload-service");
 
 const productController = {};
 
@@ -63,6 +64,7 @@ productController.createProduct = tryCatch(async (req, res) => {
     deadline,
     story,
     categoryId,
+    productVideo,
     milestoneDetailList = [],
     tierDetailList = [],
   } = req.body;
@@ -71,6 +73,15 @@ productController.createProduct = tryCatch(async (req, res) => {
   validateUniqueRanks(milestoneDetailList, "rank", MILESTONE_RANK_ID);
   validateUniqueRanks(tierDetailList, "tierRankId", TIER_RANK_ID);
 
+  if (!req.file) {
+    createError({
+      message: "Please select your product image by form data",
+      statusCode: 400,
+    });
+  }
+  // upload image
+  const productImage = await uploadService.upload(req.file.path);
+
   const productData = {
     creatorId: req.user.id,
     productName,
@@ -78,6 +89,8 @@ productController.createProduct = tryCatch(async (req, res) => {
     deadline: new Date(deadline),
     story,
     categoryId,
+    productImage,
+    productVideo,
   };
 
   const productResult = await productService.createProduct(productData);
@@ -142,6 +155,7 @@ productController.updateProduct = tryCatch(async (req, res) => {
     deadline,
     story,
     categoryId,
+    productVideo,
     milestoneDetailList = [],
     tierDetailList = [],
   } = req.body;
@@ -176,12 +190,27 @@ productController.updateProduct = tryCatch(async (req, res) => {
     validateDeadline(deadline);
   }
 
+  let productImage;
+  if (req.file) {
+    if (existProduct.productImage) {
+      await uploadService.delete(existProduct.productImage);
+    }
+    productImage = await uploadService.upload(req.file.path);
+  } else if (req.body.productImage) {
+    createError({
+      message: "Please select image by form data",
+      statusCode: 400,
+    });
+  }
+
   const productData = {
     productName,
     goal: +goal,
     deadline: deadline ? new Date(deadline) : undefined,
     story,
     categoryId,
+    productImage,
+    productVideo,
   };
 
   const filteredProductData = Object.fromEntries(

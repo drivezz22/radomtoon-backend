@@ -7,7 +7,6 @@ const stripeController = {};
 stripeController.createIntent = tryCatch(async (req, res) => {
   const { tierId } = req.params;
   const tierData = await tierService.getTierById(+tierId);
-  console.log(tierData);
   const paymentIntent = await stripe.paymentIntents.create({
     currency: "THB",
     amount: tierData.price,

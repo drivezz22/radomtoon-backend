@@ -179,6 +179,7 @@ model ProductTier {
   id         Int    @id @default(autoincrement())
   tierRankId Int
   productId  Int
+  tierName   String
   price      Int
   tierDetail String @db.Text
 

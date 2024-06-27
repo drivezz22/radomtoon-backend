@@ -25,6 +25,7 @@ productValidateSchema.createProduct = Joi.object({
     .required()
     .items(
       Joi.object({
+        tierName: Joi.string().required(),
         tierRankId: Joi.number().required(),
         price: Joi.number().required(),
         tierDetail: Joi.string().required(),
@@ -52,6 +53,7 @@ productValidateSchema.updateProduct = Joi.object({
     .allow(null)
     .items(
       Joi.object({
+        tierName: Joi.string().allow("", null),
         tierRankId: Joi.number().allow(null),
         price: Joi.number().allow(null),
         tierDetail: Joi.string().allow("", null),

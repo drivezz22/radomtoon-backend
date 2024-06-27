@@ -29,16 +29,16 @@ const validateUniqueRanks = (detailList, rankKey, rankConstants) => {
     });
   }
 
-  const isFoundAllRanks = ranks.every((r) => Object.values(rankConstants).includes(r));
-  if (!isFoundAllRanks) {
+  const isValidRank = ranks.every((r) => Object.values(rankConstants).includes(r));
+  if (!isValidRank) {
     createError({
       message: "Incorrect rank",
       statusCode: 400,
     });
   }
 
-  const overMaximumRank = detailList.filter((el) => el[rankKey] > detailList.length);
-  if (overMaximumRank.length > 0) {
+  const hasOverMaximumRank = detailList.filter((el) => el[rankKey] > detailList.length);
+  if (hasOverMaximumRank.length > 0) {
     createError({
       message: "Please select rank not over the number of ranks",
       statusCode: 400,
@@ -108,6 +108,7 @@ productController.createProduct = tryCatch(async (req, res) => {
 
   const tierPromises = tierDetailList.map((el) => {
     const tierData = {
+      tierName: el.tierName,
       tierRankId: el.tierRankId,
       productId: productResult.id,
       price: el.price,
@@ -249,6 +250,7 @@ productController.updateProduct = tryCatch(async (req, res) => {
 
     const tierPromises = tierDetailList.map((el) => {
       const tierData = {
+        tierName: el.tierName,
         tierRankId: el.tierRankId,
         productId: productResult.id,
         price: el.price,

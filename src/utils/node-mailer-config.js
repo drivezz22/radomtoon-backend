@@ -22,7 +22,7 @@ const sendEmail = async (to, subject, html, bcc = null) => {
       mailOptions.bcc = bcc;
     }
 
-    await transporter.sendMail(mailOptions);
+    // await transporter.sendMail(mailOptions);
   } catch (err) {
     throw new Error(`Error sending email: ${err.message}`);
   }

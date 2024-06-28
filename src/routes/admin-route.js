@@ -45,5 +45,11 @@ adminRouter.get(
 
 adminRouter.get("/product/waiting-approval", productController.getPendingApprovalProduct);
 adminRouter.get("/stat/admin-stat", statController.getAdminStat);
+adminRouter.get("/stat/top-five", statController.getTopFiveCategories);
+adminRouter.get("/stat/total-fund-trend", statController.getTotalFundTrend);
+adminRouter.get("/stat/creator-active", statController.getCreatorActive);
+adminRouter.get("/stat/supporter-active", statController.getSupporterActive);
+adminRouter.get("/stat/average-fund", statController.getAverageFund);
+adminRouter.get("/stat/count-project", statController.getCountProject);
 
 module.exports = adminRouter;

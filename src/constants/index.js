@@ -88,3 +88,18 @@ exports.MILESTONE_PERCENT_PAYMENT = {
 };
 
 exports.WEBSITE_PERCENT_PROFIT = 0.02;
+
+exports.MONTH_NAME_MAP = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];

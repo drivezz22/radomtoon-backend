@@ -304,7 +304,7 @@ productController.failApproval = tryCatch(async (req, res) => {
 
   if (existProduct.approvalStatusId === APPROVAL_STATUS_ID.SUCCESS) {
     createError({
-      message: "This product has already passed approva",
+      message: "This product has already passed approval",
       statusCode: 400,
     });
   }

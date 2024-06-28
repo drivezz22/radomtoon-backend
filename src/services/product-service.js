@@ -97,6 +97,36 @@ productService.updateFailedOverDeadline = (productIdList) =>
   });
 
 productService.getAllSuccessProject = () =>
-  prisma.product.findMany({ where: { productStatusId: PRODUCT_STATUS_ID.SUCCESS } });
+  prisma.product.findMany({
+    where: { productStatusId: PRODUCT_STATUS_ID.SUCCESS },
+    include: { supportProducts: { include: { tier: true } } },
+  });
+
+productService.getAllSuccessProjectFilterByStartEndDate = (startDate, endDate) =>
+  prisma.product.findMany({
+    where: {
+      productStatusId: PRODUCT_STATUS_ID.SUCCESS,
+      deadline: {
+        gte: startDate,
+        lte: endDate,
+      },
+    },
+    include: { supportProducts: { include: { tier: true } } },
+  });
+
+productService.getAllProjectFilterByStartEndDate = (startDate, endDate) =>
+  prisma.product.findMany({
+    where: {
+      deadline: {
+        gte: startDate,
+        lte: endDate,
+      },
+    },
+  });
+
+productService.getApprovalProduct = () =>
+  prisma.product.findMany({
+    where: { approvalStatusId: APPROVAL_STATUS_ID.SUCCESS },
+  });
 
 module.exports = productService;

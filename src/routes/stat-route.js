@@ -12,5 +12,21 @@ statRouter.get(
 );
 
 statRouter.get("/", statController.getStat);
+statRouter.get(
+  "/product/:productId/fund-trend",
+  creatorAuthenticate,
+  statController.getProductFundTrend
+);
+statRouter.get(
+  "/product/:productId/tier-stat",
+  creatorAuthenticate,
+  statController.getTierStat
+);
+
+statRouter.get(
+  "/product/:productId/map-density",
+  creatorAuthenticate,
+  statController.getMapDensityByProduct
+);
 
 module.exports = statRouter;

@@ -37,7 +37,7 @@ app.use("/support-products", authenticate, supportProductRouter);
 app.use("/histories", authenticate, historyRouter);
 app.use("/stats", authenticate, statRouter);
 
-nodeCron("*/10 * * * *", checkDeadline);
+// nodeCron("*/10 * * * *", checkDeadline);
 
 app.use(notFoundMiddleware);
 app.use(errorMiddleware);

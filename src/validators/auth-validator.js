@@ -12,6 +12,8 @@ authValidateSchema.supporterRegister = Joi.object({
     .required()
     .pattern(/^[0-9a-zA-Z]{6,}$/),
   confirmPassword: Joi.string().required().valid(Joi.ref("password")).strip(),
+  address: Joi.string().required().trim(),
+  provinceId: Joi.number().required(),
 });
 
 authValidateSchema.creatorRegister = Joi.object({
@@ -25,6 +27,8 @@ authValidateSchema.creatorRegister = Joi.object({
     .required()
     .pattern(/^[0-9a-zA-Z]{6,}$/),
   confirmPassword: Joi.string().required().valid(Joi.ref("password")).strip(),
+  address: Joi.string().required().trim(),
+  provinceId: Joi.number().required(),
 });
 
 authValidateSchema.login = Joi.object({

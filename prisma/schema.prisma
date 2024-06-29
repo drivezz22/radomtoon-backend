@@ -8,15 +8,20 @@ datasource db {
 }
 
 model User {
-  id              Int              @id @default(autoincrement())
-  email           String           @unique @db.VarChar(50)
-  firstName       String
-  lastName        String
-  phone           String           @unique @db.VarChar(10)
-  password        String
-  profileImage    String?
-  createdAt       DateTime         @default(now()) @db.Timestamp(0)
-  updatedAt       DateTime         @updatedAt @db.Timestamp(0)
+  id           Int      @id @default(autoincrement())
+  email        String   @unique @db.VarChar(50)
+  firstName    String
+  lastName     String
+  phone        String   @unique @db.VarChar(10)
+  password     String
+  profileImage String?
+  address      String
+  provinceId   Int
+  createdAt    DateTime @default(now()) @db.Timestamp(0)
+  updatedAt    DateTime @updatedAt @db.Timestamp(0)
+
+  province Province @relation(fields: [provinceId], references: [id])
+
   supportProducts SupportProduct[]
   comments        Comment[]
 }
@@ -41,13 +46,102 @@ model Creator {
   profileImage      String?
   identityImage     String
   isCreatorAcceptId Int
+  address           String
+  provinceId        Int
   biography         String?  @db.Text
   website           String?  @db.VarChar(50)
   createdAt         DateTime @default(now()) @db.Timestamp(0)
   updatedAt         DateTime @updatedAt @db.Timestamp(0)
 
+  province        Province              @relation(fields: [provinceId], references: [id])
   isCreatorAccept IsCreatorAcceptStatus @relation(fields: [isCreatorAcceptId], references: [id])
   products        Product[]
+}
+
+model Province {
+  id       Int          @id @default(autoincrement())
+  name     ProvinceEnum
+  creators Creator[]
+  users    User[]
+}
+
+enum ProvinceEnum {
+  AMNATCHAROEN
+  ANGTHONG
+  BANGKOK
+  BURIRAM
+  CHACHOENGSAO
+  CHAINAT
+  CHAIYAPHUM
+  CHANTHABURI
+  CHIANGMAI
+  CHIANGRAI
+  CHONBURI
+  CHUMPHON
+  KALASIN
+  KAMPAENGPHET
+  KANCHANABURI
+  KHONKAEN
+  KRABI
+  LAMPANG
+  LAMPHUN
+  LOEI
+  LOPBURI
+  MAEHONGSON
+  MAHASARAKHAM
+  MUKDAHAN
+  NAKHONNAYOK
+  NAKHONPATHOM
+  NAKHONPHANOM
+  NAKHONRATCHASIMA
+  NAKHONSAWAN
+  NAKHONSITHAMMARAT
+  NAN
+  NARATHIWAT
+  NONGBUALAMPHU
+  NONGKHAI
+  NONTHABURI
+  PATHUMTHANI
+  PATTANI
+  PHACHINBURI
+  PHANGNGA
+  PHATTHALUNG
+  PHAYAO
+  PHETCHABUN
+  PHETCHABURI
+  PHICHIT
+  PHITSANULOK
+  PHRANAKHONSIAYUDHYA
+  PHRAE
+  PHUKET
+  PRACHUAPKHILIKHAN
+  RANONG
+  RATCHABURI
+  RAYONG
+  ROIET
+  SAKAEO
+  SAKONNAKHON
+  SAMUTPRAKARN
+  SAMUTSAKHON
+  SAMUTSONGKHAM
+  SARABURI
+  SATUN
+  SISAKET
+  SINGBURI
+  SONGKHLA
+  SUKHOTHAI
+  SUPHANBURI
+  SURATTHANI
+  SURIN
+  TAK
+  TRAD
+  TRANG
+  UBONRATCHATHANI
+  UDONTHANI
+  UTHAITHANI
+  UTTARADIT
+  YALA
+  YASOTHON
 }
 
 model Comment {

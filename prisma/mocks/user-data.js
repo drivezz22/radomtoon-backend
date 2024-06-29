@@ -8,5 +8,7 @@ module.exports.userData = [
     lastName: "Doe",
     phone: "0123335598",
     password: password,
+    address: "test",
+    provinceId: 2,
   },
 ];

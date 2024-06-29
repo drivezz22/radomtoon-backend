@@ -10,24 +10,19 @@ const statController = {};
 
 const getCommonStats = async () => {
   const successProjects = await productService.getAllSuccessProject();
-  const totalProjectCount = successProjects.length;
-  const totalFunding = successProjects.reduce((acc, { totalFund }) => acc + totalFund, 0);
-
   const supportProjects = await supportProductService.getSupport();
-  const totalContributions = supportProjects.length;
 
   return {
-    totalProjectCount,
-    totalFunding,
-    totalContributions,
+    totalProjectCount: successProjects.length,
+    totalFunding: successProjects.reduce((acc, { totalFund }) => acc + totalFund, 0),
+    totalContributions: supportProjects.length,
   };
 };
 
-const getDateRange = (year) => {
-  const startDate = new Date(`${year}-01-01`);
-  const endDate = new Date(`${year}-12-31`);
-  return { startDate, endDate };
-};
+const getDateRange = (year) => ({
+  startDate: new Date(`${year}-01-01`),
+  endDate: new Date(`${year}-12-31`),
+});
 
 const getFilteredProductsByMonth = async (startDate, endDate) => {
   const allProducts = await productService.getAllSuccessProjectFilterByStartEndDate(
@@ -53,37 +48,61 @@ const getCumulativeFundsByMonth = (allSupportProducts, filterMonth) => {
   });
 };
 
-const compareTotalFundDesc = (a, b) => b.totalFund - a.totalFund;
-const compareTotalSupporterDesc = (a, b) => b.totalSupporter - a.totalSupporter;
+const compareDesc = (key) => (a, b) => b[key] - a[key];
+
+const getUniqueSupporters = (allSupportProduct) => {
+  const uniqueSupporterSet = new Set();
+  return allSupportProduct
+    .map((supporter) => ({
+      id: supporter.user.id,
+      provinceId: supporter.user.provinceId,
+    }))
+    .filter((supporter) => {
+      const key = `${supporter.id}-${supporter.provinceId}`;
+      if (!uniqueSupporterSet.has(key)) {
+        uniqueSupporterSet.add(key);
+        return true;
+      }
+      return false;
+    });
+};
+
+const countProvinces = (uniqueSupporters) => {
+  return uniqueSupporters.reduce((acc, supporter) => {
+    acc[supporter.provinceId] = (acc[supporter.provinceId] || 0) + 1;
+    return acc;
+  }, {});
+};
 
 statController.getAdminStat = tryCatch(async (req, res) => {
   const { totalProjectCount, totalFunding, totalContributions } = await getCommonStats();
-
   const webProfits = await webProfitService.getAllProfit();
   const totalWebProfit = webProfits.reduce(
     (acc, { totalProfit }) => acc + totalProfit,
     0
   );
 
-  const stat = {
-    projectSupport: totalProjectCount,
-    towardIdea: totalFunding,
-    contribution: totalContributions,
-    webProfit: totalWebProfit,
-  };
-
-  res.status(200).json({ stat });
+  res.status(200).json({
+    stat: {
+      projectSupport: totalProjectCount,
+      towardIdea: totalFunding,
+      contribution: totalContributions,
+      webProfit: totalWebProfit,
+    },
+  });
 });
 
 statController.getStatByProduct = tryCatch(async (req, res) => {
   const { productId } = req.params;
   const supportProjects = await supportProductService.getSupportByProductId(+productId);
-  const supporterCount = supportProjects.length;
-
   const product = await productService.findProductByCreatorIdAndProductId(
     req.user.id,
     +productId
   );
+
+  if (!product) {
+    throw createError({ message: "No product created by this creator", statusCode: 400 });
+  }
   if (!product) {
     createError({
       message: "No product created by this creator",
@@ -92,9 +111,9 @@ statController.getStatByProduct = tryCatch(async (req, res) => {
   }
 
   const stat = {
-    supporter: supporterCount,
-    totalFund,
-    availableFund,
+    supporter: supportProjects.length,
+    totalFund: product.totalFund,
+    availableFund: product.availableFund,
   };
 
   res.status(200).json({ stat });
@@ -113,17 +132,16 @@ statController.getStat = tryCatch(async (req, res) => {
 });
 
 statController.getTopFiveCategories = tryCatch(async (req, res) => {
-  const today = new Date();
-  const { startDate, endDate } = getDateRange(today.getFullYear());
+  const { startDate, endDate } = getDateRange(new Date().getFullYear());
   const products = await getFilteredProductsByMonth(startDate, endDate);
 
   const productDataAllMonth = MONTH_NAME_MAP.map((month) => {
     const filteredProducts = products.filter((el) => el.month === month);
     const topFiveByTotalFund = [...filteredProducts]
-      .sort(compareTotalFundDesc)
+      .sort(compareDesc("totalFund"))
       .slice(0, 5);
     const topFiveByTotalSupporter = [...filteredProducts]
-      .sort(compareTotalSupporterDesc)
+      .sort(compareDesc("totalSupporter"))
       .slice(0, 5);
 
     return { month, topFiveByTotalFund, topFiveByTotalSupporter };
@@ -160,8 +178,7 @@ statController.getTotalFundTrend = tryCatch(async (req, res) => {
 statController.getCreatorActive = tryCatch(async (req, res) => {
   const today = new Date();
   const todayMonth = dayjs(today).format("MMM");
-  const findIndexMonth = MONTH_NAME_MAP.findIndex((month) => month === todayMonth);
-  const filterMonth = MONTH_NAME_MAP.slice(0, findIndexMonth + 1);
+  const monthIndex = MONTH_NAME_MAP.findIndex((month) => month === todayMonth);
 
   const { startDate, endDate } = getDateRange(today.getFullYear());
   const allProducts = await productService.getAllProjectFilterByStartEndDate(
@@ -173,27 +190,19 @@ statController.getCreatorActive = tryCatch(async (req, res) => {
     month: dayjs(el.updatedAt).format("MMM"),
   }));
 
-  const getCurrentAndLastMonthCount = (monthIndex, mapData, monthList) => {
-    const currentMonthData = mapData.filter((el) => el.month === monthList[monthIndex]);
-    const currentMonthCount = new Set(currentMonthData.map((el) => el.creatorId)).size;
-
-    const lastMonthCount =
-      monthIndex > 0
-        ? new Set(
-            mapData
-              .filter((el) => el.month === monthList[monthIndex - 1])
-              .map((el) => el.creatorId)
-          ).size
-        : 0;
-
-    return { currentMonthCount, lastMonthCount };
-  };
-
-  const { currentMonthCount, lastMonthCount } = getCurrentAndLastMonthCount(
-    findIndexMonth,
-    mapCreatorData,
-    MONTH_NAME_MAP
+  const currentMonthData = mapCreatorData.filter(
+    (el) => el.month === MONTH_NAME_MAP[monthIndex]
   );
+  const currentMonthCount = new Set(currentMonthData.map((el) => el.creatorId)).size;
+
+  const lastMonthCount =
+    monthIndex > 0
+      ? new Set(
+          mapCreatorData
+            .filter((el) => el.month === MONTH_NAME_MAP[monthIndex - 1])
+            .map((el) => el.creatorId)
+        ).size
+      : 0;
 
   res.status(200).json({
     currentMonthCreatorActive: {
@@ -201,7 +210,7 @@ statController.getCreatorActive = tryCatch(async (req, res) => {
       count: currentMonthCount,
     },
     lastMonthCreatorActive: {
-      month: findIndexMonth > 0 ? MONTH_NAME_MAP[findIndexMonth - 1] : null,
+      month: monthIndex > 0 ? MONTH_NAME_MAP[monthIndex - 1] : null,
       count: lastMonthCount,
     },
   });
@@ -210,8 +219,7 @@ statController.getCreatorActive = tryCatch(async (req, res) => {
 statController.getSupporterActive = tryCatch(async (req, res) => {
   const today = new Date();
   const todayMonth = dayjs(today).format("MMM");
-  const findIndexMonth = MONTH_NAME_MAP.findIndex((month) => month === todayMonth);
-  const filterMonth = [...MONTH_NAME_MAP].slice(0, findIndexMonth + 1);
+  const monthIndex = MONTH_NAME_MAP.findIndex((month) => month === todayMonth);
 
   const startDate = new Date(`${today.getFullYear()}-01-01`);
   const endDate = new Date(`${today.getFullYear()}-12-31`);
@@ -232,23 +240,22 @@ statController.getSupporterActive = tryCatch(async (req, res) => {
 
   const countSupporterCurrentMonth = new Set(supporterIdCurrentMonth).size;
 
-  let countSupporterLastMonth;
-  if (findIndexMonth - 1 > 0) {
-    const supporterIdLastMonth = mapSupporterData
-      .filter((el) => el.month === MONTH_NAME_MAP[findIndexMonth - 1])
-      .map((el) => el.supporterId);
-    countSupporterLastMonth = new Set(supporterIdLastMonth).size;
-  } else {
-    countSupporterLastMonth = 0;
-  }
+  const countSupporterLastMonth =
+    monthIndex > 0
+      ? new Set(
+          mapSupporterData
+            .filter((el) => el.month === MONTH_NAME_MAP[monthIndex - 1])
+            .map((el) => el.supporterId)
+        ).size
+      : 0;
 
   res.status(200).json({
     currentMonthCreatorActive: {
-      month: MONTH_NAME_MAP[filterMonth],
+      month: todayMonth,
       count: countSupporterCurrentMonth,
     },
     lastMonthCreatorActive: {
-      month: findIndexMonth > 0 ? MONTH_NAME_MAP[filterMonth] : null,
+      month: monthIndex > 0 ? MONTH_NAME_MAP[monthIndex - 1] : null,
       count: countSupporterLastMonth,
     },
   });
@@ -272,40 +279,44 @@ statController.getAverageFund = tryCatch(async (req, res) => {
 });
 
 statController.getCountProject = tryCatch(async (req, res) => {
-  const getApprovalProduct = await productService.getApprovalProduct();
-  const mapApprovalProduct = getApprovalProduct.map((el) => {
-    return { productStatusId: el.productStatusId };
-  });
-  const countPending = mapApprovalProduct.filter(
-    (el) => el.productStatusId === PRODUCT_STATUS_ID.PENDING
-  );
-  const countSuccess = mapApprovalProduct.filter(
-    (el) => el.productStatusId === PRODUCT_STATUS_ID.SUCCESS
-  );
-  const countFailed = mapApprovalProduct.filter(
-    (el) => el.productStatusId === PRODUCT_STATUS_ID.FAILED
-  );
+  const approvalProducts = await productService.getApprovalProduct();
+  const statusCounts = approvalProducts.reduce((acc, { productStatusId }) => {
+    acc[productStatusId] = (acc[productStatusId] || 0) + 1;
+    return acc;
+  }, {});
 
   res.status(200).json({
-    totalProject: mapApprovalProduct.length,
-    pendingProject: countPending.length,
-    successProject: countSuccess.length,
-    failedProject: countFailed.length,
+    totalProject: approvalProducts.length,
+    pendingProject: statusCounts[PRODUCT_STATUS_ID.PENDING] || 0,
+    successProject: statusCounts[PRODUCT_STATUS_ID.SUCCESS] || 0,
+    failedProject: statusCounts[PRODUCT_STATUS_ID.FAILED] || 0,
   });
 });
 
 statController.getProductFundTrend = tryCatch(async (req, res) => {
+  const { productId } = req.params;
+
+  const existProduct = await productService.checkCreatorIdMatchProductId(
+    req.user.id,
+    +productId
+  );
+
+  if (!existProduct.length) {
+    return res.status(200).json({ cumulativeFundAllMonth: [] });
+  }
+
   const today = new Date();
   const todayMonth = dayjs(today).format("MMM");
   const findIndexMonth = MONTH_NAME_MAP.findIndex((month) => month === todayMonth);
   const filterMonth = [...MONTH_NAME_MAP].slice(0, findIndexMonth + 1);
 
-  const startDate = new Date(`${today.getFullYear()}-01-01`);
-  const endDate = new Date(`${today.getFullYear()}-12-31`);
+  const { startDate, endDate } = getDateRange(today.getFullYear());
+
   const getAllSupportProduct =
-    await supportProductService.getAllSupporterProductFilterByStartEndDate(
+    await supportProductService.getAllSupporterProductFilterByStartEndDateProductId(
       startDate,
-      endDate
+      endDate,
+      +productId
     );
 
   const mapSupportProduct = getAllSupportProduct.map((el) => ({
@@ -315,13 +326,84 @@ statController.getProductFundTrend = tryCatch(async (req, res) => {
 
   let cumulativeFund = 0;
   const cumulativeFundAllMonth = filterMonth.map((month) => {
-    const filterMonth = mapSupportProduct.filter((el) => el.month === month);
-    const totalFundMonth = filterMonth.reduce((acc, item) => acc + item.fund, 0);
-    cumulativeFund = cumulativeFund + totalFundMonth;
-    return { month, cumulativeFund: cumulativeFund };
+    const totalFundMonth = mapSupportProduct
+      .filter((el) => el.month === month)
+      .reduce((acc, item) => acc + item.fund, 0);
+    cumulativeFund += totalFundMonth;
+    return { month, cumulativeFund };
   });
 
   res.status(200).json({ cumulativeFundAllMonth });
 });
 
+statController.getTierStat = tryCatch(async (req, res, next) => {
+  const { productId } = req.params;
+
+  const existProduct = await productService.checkCreatorIdMatchProductId(
+    req.user.id,
+    +productId
+  );
+
+  if (!existProduct.length) {
+    return res.status(200).json({ combineTier: [] });
+  }
+
+  const today = new Date();
+  const { startDate, endDate } = getDateRange(today.getFullYear());
+  const allSupportProduct =
+    await supportProductService.getAllSupporterProductFilterByStartEndDateProductId(
+      startDate,
+      endDate,
+      +productId
+    );
+
+  const combineTier = allSupportProduct.reduce((acc, { tier: { tierName, price } }) => {
+    acc[tierName] = (acc[tierName] || 0) + price;
+    return acc;
+  }, {});
+
+  res.status(200).json({ combineTier });
+});
+
+statController.getMapDensityAllProduct = tryCatch(async (req, res, next) => {
+  const today = new Date();
+  const { startDate, endDate } = getDateRange(today.getFullYear());
+  const allSupportProduct =
+    await supportProductService.getAllSupporterProductFilterByStartEndDate(
+      startDate,
+      endDate
+    );
+
+  const uniqueSupporters = getUniqueSupporters(allSupportProduct);
+  const provinceCount = countProvinces(uniqueSupporters);
+
+  res.status(200).json({ provinceCount });
+});
+
+statController.getMapDensityByProduct = tryCatch(async (req, res, next) => {
+  const { productId } = req.params;
+
+  const existProduct = await productService.checkCreatorIdMatchProductId(
+    req.user.id,
+    +productId
+  );
+
+  if (!existProduct.length) {
+    return res.status(200).json({ provinceCount: {} });
+  }
+
+  const today = new Date();
+  const { startDate, endDate } = getDateRange(today.getFullYear());
+  const allSupportProduct =
+    await supportProductService.getAllSupporterProductFilterByStartEndDateProductId(
+      startDate,
+      endDate,
+      +productId
+    );
+
+  const uniqueSupporters = getUniqueSupporters(allSupportProduct);
+  const provinceCount = countProvinces(uniqueSupporters);
+
+  res.status(200).json({ provinceCount });
+});
 module.exports = statController;

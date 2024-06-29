@@ -129,4 +129,7 @@ productService.getApprovalProduct = () =>
     where: { approvalStatusId: APPROVAL_STATUS_ID.SUCCESS },
   });
 
+productService.checkCreatorIdMatchProductId = (creatorId, productId) =>
+  prisma.product.findMany({ where: { creatorId: creatorId, id: productId } });
+
 module.exports = productService;

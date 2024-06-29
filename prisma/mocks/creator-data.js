@@ -8,7 +8,8 @@ module.exports.creatorData = [
     lastName: "test",
     phone: "0123654788",
     password: password,
-
+    address: "test",
+    provinceId: 1,
     profileImage: null,
     identityImage:
       "https://res.cloudinary.com/dpl1p3prr/image/upload/v1718978626/17189786233862986.jpg",

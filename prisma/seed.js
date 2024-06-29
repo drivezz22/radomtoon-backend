@@ -11,10 +11,12 @@ const { approvalStatusTypeData } = require("./mocks/approval-status-type-data");
 const { creatorData } = require("./mocks/creator-data");
 const { adminData } = require("./mocks/admin-data");
 const { categoryData } = require("./mocks/category-data");
+const { provinceData } = require("./mocks/province-data");
 
 const prisma = new PrismaClient();
 
 const initialRun = async () => {
+  await prisma.province.createMany({ data: provinceData });
   await prisma.user.createMany({ data: userData });
   await prisma.admin.createMany({ data: adminData });
   await prisma.deliveryStatus.createMany({ data: deliveryStatusTypeData });

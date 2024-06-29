@@ -62,7 +62,24 @@ supportProductService.getAllSupporterProductFilterByStartEndDate = (startDate, e
       },
       deletedAt: null,
     },
-    include: { tier: true },
+    include: { tier: true, user: true },
+  });
+
+supportProductService.getAllSupporterProductFilterByStartEndDateProductId = (
+  startDate,
+  endDate,
+  productId
+) =>
+  prisma.supportProduct.findMany({
+    where: {
+      createdAt: {
+        gte: startDate,
+        lte: endDate,
+      },
+      deletedAt: null,
+      productId,
+    },
+    include: { tier: true, user: true },
   });
 
 module.exports = supportProductService;

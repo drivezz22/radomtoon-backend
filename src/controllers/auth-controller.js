@@ -102,7 +102,7 @@ authController.creatorRegister = async (req, res, next) => {
 
     // upload image
     data.identityImage = await uploadService.upload(req.file.path);
-
+    data.provinceId = +data.provinceId;
     data.password = await hashService.hash(data.password);
     data.isCreatorAcceptId = IS_CREATOR_ACCEPT_STATUS.PENDING;
     await creatorService.createUser(data);
@@ -126,8 +126,8 @@ authController.passApproval = tryCatch(async (req, res) => {
 authController.failedApproval = tryCatch(async (req, res) => {
   const { creatorId } = req.params;
   const existCreator = await creatorService.findUserById(+creatorId);
-  await uploadService.delete(existCreator.identityImage);
   await handleApproval(req, res, "reject");
+  await uploadService.delete(existCreator.identityImage);
 });
 authController.login = tryCatch(async (req, res) => {
   const data = req.input;

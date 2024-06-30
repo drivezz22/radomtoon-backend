@@ -272,17 +272,15 @@ productController.updateProduct = tryCatch(async (req, res) => {
 });
 
 productController.getAllProduct = tryCatch(async (req, res) => {
-  if (req.user.role === USER_ROLE.SUPPORTER) {
-    const allProduct = await productService.getAllProduct();
-    return res.status(200).json({ productList: allProduct });
-  }
-
-  if (req.user.role === USER_ROLE.CREATOR) {
+  if (req?.user?.role === USER_ROLE.CREATOR) {
     const allProductByCreatorId = await productService.getAllProductByCreatorId(
       req.user.id
     );
     return res.status(200).json({ productList: allProductByCreatorId });
   }
+
+  const allProduct = await productService.getAllProduct();
+  return res.status(200).json({ productList: allProduct });
 });
 
 productController.getAllProductForAdmin = tryCatch(async (req, res) => {

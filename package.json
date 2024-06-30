@@ -2,12 +2,13 @@
   "name": "radomtoon-backend-api",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon src/app.js",
     "resetDB": "node prisma/resetDB.js",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "start": "node app.js"
   },
   "prisma": {
     "seed": "node prisma/seed.js"

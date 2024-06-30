@@ -30,7 +30,7 @@ app.use("/stripe", stripeRouter);
 app.use("/auth", authRouter);
 app.use("/admin", authenticate, adminAuthenticate, adminRouter);
 app.use("/creators", authenticate, creatorAuthenticate, creatorRouter);
-app.use("/products", authenticate, productRouter);
+app.use("/products", productRouter);
 app.use("/comments", authenticate, commentRouter);
 app.use("/milestones", authenticate, creatorAuthenticate, milestoneRouter);
 app.use("/support-products", authenticate, supportProductRouter);

@@ -7,11 +7,13 @@ const {
 } = require("../middlewares/validator");
 const upload = require("../middlewares/upload");
 const productTransform = require("../middlewares/product-transform");
+const authenticate = require("../middlewares/authenticate");
 
 const productRouter = express.Router();
 
 productRouter.post(
   "/",
+  authenticate,
   creatorAuthenticate,
   upload.single("productImage"),
   productTransform,
@@ -19,9 +21,15 @@ productRouter.post(
   productController.createProduct
 );
 
-productRouter.delete("/:productId", creatorAuthenticate, productController.deleteProduct);
+productRouter.delete(
+  "/:productId",
+  authenticate,
+  creatorAuthenticate,
+  productController.deleteProduct
+);
 productRouter.patch(
   "/:productId",
+  authenticate,
   creatorAuthenticate,
   upload.single("productImage"),
   productTransform,

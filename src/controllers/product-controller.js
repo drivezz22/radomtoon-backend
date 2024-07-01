@@ -65,14 +65,13 @@ productController.createProduct = tryCatch(async (req, res) => {
     story,
     categoryId,
     productVideo,
+    summaryDetail = "",
     milestoneDetailList = [],
     tierDetailList = [],
   } = req.body;
-
   validateDeadline(deadline);
   validateUniqueRanks(milestoneDetailList, "rank", MILESTONE_RANK_ID);
   validateUniqueRanks(tierDetailList, "tierRankId", TIER_RANK_ID);
-
   if (!req.file) {
     createError({
       message: "Please select your product image by form data",
@@ -91,6 +90,7 @@ productController.createProduct = tryCatch(async (req, res) => {
     categoryId,
     productImage,
     productVideo,
+    summaryDetail,
   };
 
   const productResult = await productService.createProduct(productData);
@@ -157,6 +157,7 @@ productController.updateProduct = tryCatch(async (req, res) => {
     story,
     categoryId,
     productVideo,
+    summaryDetail = "",
     milestoneDetailList = [],
     tierDetailList = [],
   } = req.body;
@@ -212,6 +213,7 @@ productController.updateProduct = tryCatch(async (req, res) => {
     categoryId,
     productImage,
     productVideo,
+    summaryDetail,
   };
 
   const filteredProductData = Object.fromEntries(
@@ -273,14 +275,24 @@ productController.updateProduct = tryCatch(async (req, res) => {
 
 productController.getAllProduct = tryCatch(async (req, res) => {
   if (req?.user?.role === USER_ROLE.CREATOR) {
-    const allProductByCreatorId = await productService.getAllProductByCreatorId(
-      req.user.id
-    );
-    return res.status(200).json({ productList: allProductByCreatorId });
+    const allProduct = await productService.getAllProductByCreatorId(req.user.id);
+    const dropCreatorAllProduct = allProduct.map((el) => {
+      el.creatorName = `${el.creator.firstName} ${el.creator.lastName}`;
+      el.creatorProfileImage = el.profileImage;
+      delete el.creator;
+      return el;
+    });
+    return res.status(200).json({ productList: dropCreatorAllProduct });
   }
 
   const allProduct = await productService.getAllProduct();
-  return res.status(200).json({ productList: allProduct });
+  const dropCreatorAllProduct = allProduct.map((el) => {
+    el.creatorName = `${el.creator.firstName} ${el.creator.lastName}`;
+    el.creatorProfileImage = el.profileImage;
+    delete el.creator;
+    return el;
+  });
+  return res.status(200).json({ productList: dropCreatorAllProduct });
 });
 
 productController.getAllProductForAdmin = tryCatch(async (req, res) => {

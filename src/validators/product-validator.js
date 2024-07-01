@@ -10,6 +10,7 @@ productValidateSchema.createProduct = Joi.object({
   categoryId: Joi.number().integer().min(1).max(10).required(),
   productVideo: Joi.string(),
   productImage: Joi.string().allow("", null),
+  summaryDetail: Joi.string().allow("", null),
   milestoneDetailList: Joi.array()
     .length(3)
     .required()
@@ -41,6 +42,7 @@ productValidateSchema.updateProduct = Joi.object({
   categoryId: Joi.number().integer().min(1).max(10).allow(null),
   productVideo: Joi.string().allow(null),
   productImage: Joi.string().allow("", null),
+  summaryDetail: Joi.string().allow("", null),
   milestoneDetailList: Joi.array()
     .allow(null)
     .items(

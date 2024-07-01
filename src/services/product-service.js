@@ -32,14 +32,14 @@ productService.getAllProduct = () =>
       productStatusId: { not: PRODUCT_STATUS_ID.FAILED },
     },
     orderBy: { createdAt: "desc" },
-    include: { productMilestones: true, productTiers: true },
+    include: { productMilestones: true, productTiers: true, creator: true },
   });
 
 productService.getAllProductByCreatorId = (creatorId) =>
   prisma.product.findMany({
     where: { creatorId },
     orderBy: { createdAt: "desc" },
-    include: { productMilestones: true, productTiers: true },
+    include: { productMilestones: true, productTiers: true, creator: true },
   });
 
 productService.getAllProductForAdmin = () =>

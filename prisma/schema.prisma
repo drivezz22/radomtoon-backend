@@ -178,6 +178,7 @@ model Product {
   deadline         DateTime
   productImage     String
   productVideo     String?
+  summaryDetail    String?
   story            String   @db.MediumText
   totalFund        Int      @default(0)
   availableFund    Int      @default(0)

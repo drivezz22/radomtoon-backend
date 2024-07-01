@@ -19,6 +19,7 @@ const { checkDeadline } = require("./utils/check-deadline-scheduler");
 const historyRouter = require("./routes/history-route");
 const statRouter = require("./routes/stat-route");
 const stripeRouter = require("./routes/stripe-route");
+const tierRouter = require("./routes/tier-route");
 const app = express();
 
 app.use(cors());
@@ -33,6 +34,7 @@ app.use("/creators", authenticate, creatorAuthenticate, creatorRouter);
 app.use("/products", productRouter);
 app.use("/comments", authenticate, commentRouter);
 app.use("/milestones", authenticate, creatorAuthenticate, milestoneRouter);
+app.use("/tiers", authenticate, creatorAuthenticate, tierRouter);
 app.use("/support-products", authenticate, supportProductRouter);
 app.use("/histories", authenticate, historyRouter);
 app.use("/stats", authenticate, statRouter);

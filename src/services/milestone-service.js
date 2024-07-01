@@ -5,6 +5,8 @@ const milestoneService = {};
 
 milestoneService.createMilestone = (data) => prisma.productMilestone.create({ data });
 
+milestoneService.deleteById = (id) => prisma.productMilestone.delete({ where: { id } });
+
 milestoneService.deleteByProductId = (productId) =>
   prisma.productMilestone.deleteMany({ where: { productId } });
 
@@ -35,6 +37,12 @@ milestoneService.passApproval = (id) =>
 milestoneService.getPendingApprovalMilestone = () =>
   prisma.productMilestone.findMany({
     where: { approvalStatusId: APPROVAL_STATUS_ID.PENDING },
+  });
+
+milestoneService.getMilestoneByProductIdAndRankId = (productId, milestoneRankId) =>
+  prisma.productMilestone.findFirst({
+    where: { productId, milestoneRankId },
+    include: { product: true },
   });
 
 module.exports = milestoneService;

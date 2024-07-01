@@ -1,6 +1,5 @@
 const dayjs = require("dayjs");
 const {
-  MILESTONE_RANK_ID,
   APPROVAL_STATUS_ID,
   USER_ROLE,
   TIER_RANK_ID,
@@ -18,34 +17,6 @@ const uploadService = require("../services/upload-service");
 
 const productController = {};
 
-const validateUniqueRanks = (detailList, rankKey, rankConstants) => {
-  const ranks = detailList.map((el) => el[rankKey]);
-  const ranksSet = new Set(ranks);
-
-  if (ranksSet.size !== ranks.length) {
-    createError({
-      message: "Some items have the same rank",
-      statusCode: 400,
-    });
-  }
-
-  const isValidRank = ranks.every((r) => Object.values(rankConstants).includes(r));
-  if (!isValidRank) {
-    createError({
-      message: "Incorrect rank",
-      statusCode: 400,
-    });
-  }
-
-  const hasOverMaximumRank = detailList.filter((el) => el[rankKey] > detailList.length);
-  if (hasOverMaximumRank.length > 0) {
-    createError({
-      message: "Please select rank not over the number of ranks",
-      statusCode: 400,
-    });
-  }
-};
-
 const validateDeadline = (deadline) => {
   const today = dayjs(new Date());
   const dateFromDB = dayjs(new Date(deadline));
@@ -58,27 +29,17 @@ const validateDeadline = (deadline) => {
 };
 
 productController.createProduct = tryCatch(async (req, res) => {
-  const {
-    productName,
-    goal,
-    deadline,
-    story,
-    categoryId,
-    productVideo,
-    summaryDetail = "",
-    milestoneDetailList = [],
-    tierDetailList = [],
-  } = req.body;
+  const { productName, goal, deadline, categoryId, productVideo, summaryDetail } =
+    req.body;
   validateDeadline(deadline);
-  validateUniqueRanks(milestoneDetailList, "rank", MILESTONE_RANK_ID);
-  validateUniqueRanks(tierDetailList, "tierRankId", TIER_RANK_ID);
+
   if (!req.file) {
     createError({
       message: "Please select your product image by form data",
       statusCode: 400,
     });
   }
-  // upload image
+
   const productImage = await uploadService.upload(req.file.path);
 
   const productData = {
@@ -86,8 +47,7 @@ productController.createProduct = tryCatch(async (req, res) => {
     productName,
     goal: +goal,
     deadline: new Date(deadline),
-    story,
-    categoryId,
+    categoryId: +categoryId,
     productImage,
     productVideo,
     summaryDetail,
@@ -95,35 +55,9 @@ productController.createProduct = tryCatch(async (req, res) => {
 
   const productResult = await productService.createProduct(productData);
 
-  const milestonePromises = milestoneDetailList.map((el) => {
-    const milestoneData = {
-      productId: productResult.id,
-      milestoneRankId: el.rank,
-      milestoneDetail: el.detail,
-    };
-    return milestoneService.createMilestone(milestoneData);
-  });
-
-  const milestoneResult = await Promise.all(milestonePromises);
-
-  const tierPromises = tierDetailList.map((el) => {
-    const tierData = {
-      tierName: el.tierName,
-      tierRankId: el.tierRankId,
-      productId: productResult.id,
-      price: el.price,
-      tierDetail: el.tierDetail,
-    };
-    return tierService.createTier(tierData);
-  });
-
-  const tierDetailResult = await Promise.all(tierPromises);
-
   res.status(201).json({
     message: "Product is created",
     productDetail: productResult,
-    milestoneDetail: milestoneResult,
-    tierDetail: tierDetailResult,
   });
 });
 
@@ -136,6 +70,9 @@ productController.deleteProduct = tryCatch(async (req, res) => {
   if (!existProduct) {
     return res.status(204).end();
   }
+  if (existProduct.productImage) {
+    await uploadService.delete(existProduct.productImage);
+  }
 
   if (existProduct.approvalStatusId === APPROVAL_STATUS_ID.SUCCESS) {
     createError({
@@ -143,6 +80,15 @@ productController.deleteProduct = tryCatch(async (req, res) => {
       statusCode: 400,
     });
   }
+  const tierData = await tierService.getTierByProductId(+productId);
+
+  const tierImageList = tierData.map((el) => {
+    if (el.tierImage) {
+      return uploadService.delete(el.tierImage);
+    }
+  });
+
+  await Promise.all(tierImageList);
   await milestoneService.deleteByProductId(+productId);
   await tierService.deleteByProductId(+productId);
   await productService.deleteProductById(+productId);
@@ -150,17 +96,9 @@ productController.deleteProduct = tryCatch(async (req, res) => {
 });
 
 productController.updateProduct = tryCatch(async (req, res) => {
-  const {
-    productName,
-    goal,
-    deadline,
-    story,
-    categoryId,
-    productVideo,
-    summaryDetail = "",
-    milestoneDetailList = [],
-    tierDetailList = [],
-  } = req.body;
+  const { productName, goal, deadline, story, categoryId, productVideo, summaryDetail } =
+    req.body;
+
   const { productId } = req.params;
   const existProduct = await productService.findProductByCreatorIdAndProductId(
     req.user.id,
@@ -173,17 +111,17 @@ productController.updateProduct = tryCatch(async (req, res) => {
       statusCode: 400,
     });
   }
-  if (
-    [APPROVAL_STATUS_ID.SUCCESS, APPROVAL_STATUS_ID.PENDING].includes(
-      existProduct.approvalStatusId
-    )
-  ) {
+
+  if (existProduct.approvalStatusId === APPROVAL_STATUS_ID.PENDING) {
     createError({
-      message: `Product is already ${
-        existProduct.approvalStatusId === APPROVAL_STATUS_ID.SUCCESS
-          ? "approved"
-          : "pending approval"
-      }`,
+      message: "Product is already approved",
+      statusCode: 400,
+    });
+  }
+
+  if (existProduct.approvalStatusId === APPROVAL_STATUS_ID.SUCCESS) {
+    createError({
+      message: "Product is pending approval",
       statusCode: 400,
     });
   }
@@ -199,10 +137,7 @@ productController.updateProduct = tryCatch(async (req, res) => {
     }
     productImage = await uploadService.upload(req.file.path);
   } else if (req.body.productImage) {
-    createError({
-      message: "Please select image by form data",
-      statusCode: 400,
-    });
+    productImage = req.body.productImage;
   }
 
   const productData = {
@@ -210,7 +145,7 @@ productController.updateProduct = tryCatch(async (req, res) => {
     goal: +goal,
     deadline: deadline ? new Date(deadline) : undefined,
     story,
-    categoryId,
+    categoryId: +categoryId,
     productImage,
     productVideo,
     summaryDetail,
@@ -225,52 +160,95 @@ productController.updateProduct = tryCatch(async (req, res) => {
     filteredProductData
   );
 
-  let milestoneResult = [];
-
-  if (milestoneDetailList.length > 0) {
-    validateUniqueRanks(milestoneDetailList, "rank", MILESTONE_RANK_ID);
-    await milestoneService.deleteByProductId(+productId);
-
-    const milestonePromises = milestoneDetailList.map((el) => {
-      const milestoneData = {
-        productId: productResult.id,
-        milestoneRankId: el.rank,
-        milestoneDetail: el.detail,
-      };
-      return milestoneService.createMilestone(milestoneData);
-    });
-    milestoneResult = await Promise.all(milestonePromises);
-  } else {
-    milestoneResult = await milestoneService.getMilestoneByProductId(+productId);
-  }
-
-  let tierDetailResult = [];
-  if (tierDetailList.length > 0) {
-    validateUniqueRanks(tierDetailList, "tierRankId", TIER_RANK_ID);
-
-    await tierService.deleteByProductId(+productId);
-
-    const tierPromises = tierDetailList.map((el) => {
-      const tierData = {
-        tierName: el.tierName,
-        tierRankId: el.tierRankId,
-        productId: productResult.id,
-        price: el.price,
-        tierDetail: el.tierDetail,
-      };
-      return tierService.createTier(tierData);
-    });
-    tierDetailResult = await Promise.all(tierPromises);
-  } else {
-    tierDetailResult = await tierService.getTierByProductId(+productId);
-  }
-
   res.status(200).json({
     message: "Product is updated",
     productDetail: productResult,
-    milestoneDetail: milestoneResult,
-    tierDetail: tierDetailResult,
   });
+});
+
+productController.updateStory = tryCatch(async (req, res) => {
+  const { productId } = req.params;
+  const data = req.body;
+
+  const existProduct = await productService.findProductByCreatorIdAndProductId(
+    req.user.id,
+    +productId
+  );
+
+  if (!existProduct) {
+    createError({
+      message: "No this product in DB",
+      statusCode: 400,
+    });
+  }
+
+  if (existProduct.approvalStatusId === APPROVAL_STATUS_ID.PENDING) {
+    createError({
+      message: "Product is already approved",
+      statusCode: 400,
+    });
+  }
+
+  if (existProduct.approvalStatusId === APPROVAL_STATUS_ID.SUCCESS) {
+    createError({
+      message: "Product is pending approval",
+      statusCode: 400,
+    });
+  }
+
+  const productResult = await productService.updateProductById(+productId, data);
+
+  res.status(200).json({
+    message: "Product story is updated",
+    productDetail: productResult,
+  });
+});
+
+productController.updateApprovePending = tryCatch(async (req, res) => {
+  const { productId } = req.params;
+
+  const existProduct = await productService.findProductByCreatorIdAndProductId(
+    +req.user.id,
+    +productId
+  );
+
+  if (!existProduct) {
+    createError({
+      message: "No this product in DB",
+      statusCode: 400,
+    });
+  }
+
+  if (existProduct.approvalStatusId === APPROVAL_STATUS_ID.SUCCESS) {
+    createError({
+      message: "Product is already approved",
+      statusCode: 400,
+    });
+  }
+
+  if (existProduct.approvalStatusId === APPROVAL_STATUS_ID.PENDING) {
+    createError({
+      message: "Product is already pending approval",
+      statusCode: 400,
+    });
+  }
+
+  if (existProduct.productMilestones.length !== Object.keys(TIER_RANK_ID).length) {
+    createError({
+      message: "Milestone is not completed",
+      statusCode: 400,
+    });
+  }
+
+  if (existProduct.productTiers.length === 0) {
+    createError({
+      message: "Tier should be minimum 1",
+      statusCode: 400,
+    });
+  }
+
+  await productService.updateApprovePending(+productId);
+  res.status(200).json({ message: "Approval status is updated" });
 });
 
 productController.getAllProduct = tryCatch(async (req, res) => {

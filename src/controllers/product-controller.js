@@ -273,18 +273,18 @@ productController.updateProduct = tryCatch(async (req, res) => {
   });
 });
 
-productController.getAllProduct = tryCatch(async (req, res) => {
-  if (req?.user?.role === USER_ROLE.CREATOR) {
-    const allProduct = await productService.getAllProductByCreatorId(req.user.id);
-    const dropCreatorAllProduct = allProduct.map((el) => {
-      el.creatorName = `${el.creator.firstName} ${el.creator.lastName}`;
-      el.creatorProfileImage = el.profileImage;
-      delete el.creator;
-      return el;
-    });
-    return res.status(200).json({ productList: dropCreatorAllProduct });
-  }
+productController.getAllProductByCreatorId = tryCatch(async (req, res) => {
+  const allProduct = await productService.getAllProductByCreatorId(req.user.id);
+  const dropCreatorAllProduct = allProduct.map((el) => {
+    el.creatorName = `${el.creator.firstName} ${el.creator.lastName}`;
+    el.creatorProfileImage = el.profileImage;
+    delete el.creator;
+    return el;
+  });
+  return res.status(200).json({ productList: dropCreatorAllProduct });
+});
 
+productController.getAllProduct = tryCatch(async (req, res) => {
   const allProduct = await productService.getAllProduct();
   const dropCreatorAllProduct = allProduct.map((el) => {
     el.creatorName = `${el.creator.firstName} ${el.creator.lastName}`;

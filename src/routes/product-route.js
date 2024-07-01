@@ -50,4 +50,10 @@ productRouter.patch(
 );
 
 productRouter.get("/", productController.getAllProduct);
+productRouter.get(
+  "/creator",
+  authenticate,
+  creatorAuthenticate,
+  productController.getAllProductByCreatorId
+);
 module.exports = productRouter;

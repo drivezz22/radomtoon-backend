@@ -129,6 +129,7 @@ authController.failedApproval = tryCatch(async (req, res) => {
   await handleApproval(req, res, "reject");
   await uploadService.delete(existCreator.identityImage);
 });
+
 authController.login = tryCatch(async (req, res) => {
   const data = req.input;
   const [existSupporterEmail, existCreatorEmail, existAdminEmail] = await Promise.all([

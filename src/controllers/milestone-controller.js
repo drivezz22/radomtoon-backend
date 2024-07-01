@@ -170,4 +170,68 @@ milestoneController.passApproval = tryCatch(async (req, res) => {
   res.status(200).json({ message: "pass approval in this milestone" });
 });
 
+milestoneController.createMilestone = tryCatch(async (req, res) => {
+  const { productId } = req.params;
+  const data = req.body;
+  const existMilestone = await milestoneService.getMilestoneByProductIdAndRankId(
+    +productId,
+    data.milestoneRankId
+  );
+
+  if (existMilestone) {
+    createError({
+      message: "This milestone rank of this product already exist in DB",
+      statusCode: 400,
+    });
+  }
+
+  const existProduct = await productService.findProductByCreatorIdAndProductId(
+    +req.user.id,
+    +productId
+  );
+
+  if (existProduct.approvalStatusId === APPROVAL_STATUS_ID.SUCCESS) {
+    createError({
+      message: "This product has already passed approval",
+      statusCode: 400,
+    });
+  }
+
+  if (existProduct.approvalStatusId === APPROVAL_STATUS_ID.PENDING) {
+    createError({
+      message: "This product has pending approval",
+    });
+  }
+  data.productId = +productId;
+  const milestoneData = await milestoneService.createMilestone(data);
+  res.status(201).json({ message: "Milestone is created", milestoneData });
+});
+
+milestoneController.updateMilestone = tryCatch(async (req, res) => {
+  const { milestoneId } = req.params;
+  const existMilestone = await milestoneService.getMilestoneById(+milestoneId);
+  if (!existMilestone) {
+    createError({
+      message: "This milestone does not exist in DB",
+      statusCode: 400,
+    });
+  }
+
+  const milestoneData = await milestoneService.updateMilestoneById(
+    +milestoneId,
+    req.body
+  );
+  res.status(200).json({ message: "milestone updated", milestone: milestoneData });
+});
+
+milestoneController.deleteMilestone = tryCatch(async (req, res) => {
+  const { milestoneId } = req.params;
+  const existMilestone = await milestoneService.getMilestoneById(+milestoneId);
+  if (!existMilestone) {
+    return res.status(204).end();
+  }
+  await milestoneService.deleteById(+milestoneId);
+  res.status(204).end();
+});
+
 module.exports = milestoneController;

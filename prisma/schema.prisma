@@ -178,8 +178,8 @@ model Product {
   deadline         DateTime
   productImage     String
   productVideo     String?
-  summaryDetail    String?
-  story            String   @db.MediumText
+  summaryDetail    String
+  story            String?  @db.MediumText
   totalFund        Int      @default(0)
   availableFund    Int      @default(0)
   createdAt        DateTime @default(now()) @db.Timestamp(0)
@@ -271,12 +271,13 @@ enum ApprovalStatusEnum {
 }
 
 model ProductTier {
-  id         Int    @id @default(autoincrement())
+  id         Int     @id @default(autoincrement())
   tierRankId Int
   productId  Int
   tierName   String
+  tierImage  String?
   price      Int
-  tierDetail String @db.Text
+  tierDetail String  @db.Text
 
   product         Product          @relation(fields: [productId], references: [id])
   tierRank        TierRank         @relation(fields: [tierRankId], references: [id])

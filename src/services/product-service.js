@@ -10,6 +10,7 @@ productService.findProductByCreatorIdAndProductId = (creatorId, productId) =>
       id: productId,
       creatorId,
     },
+    include: { productMilestones: true, productTiers: true },
   });
 
 productService.findProductById = (productId) =>
@@ -131,5 +132,11 @@ productService.getApprovalProduct = () =>
 
 productService.checkCreatorIdMatchProductId = (creatorId, productId) =>
   prisma.product.findMany({ where: { creatorId: creatorId, id: productId } });
+
+productService.updateApprovePending = (productId) =>
+  prisma.product.update({
+    where: { id: productId },
+    data: { approvalStatusId: APPROVAL_STATUS_ID.PENDING },
+  });
 
 module.exports = productService;

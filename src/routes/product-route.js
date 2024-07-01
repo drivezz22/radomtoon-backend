@@ -4,9 +4,9 @@ const productController = require("../controllers/product-controller");
 const {
   createProductValidator,
   updateProductValidator,
+  updateStoryValidator,
 } = require("../middlewares/validator");
 const upload = require("../middlewares/upload");
-const productTransform = require("../middlewares/product-transform");
 const authenticate = require("../middlewares/authenticate");
 
 const productRouter = express.Router();
@@ -16,7 +16,6 @@ productRouter.post(
   authenticate,
   creatorAuthenticate,
   upload.single("productImage"),
-  productTransform,
   createProductValidator,
   productController.createProduct
 );
@@ -32,9 +31,22 @@ productRouter.patch(
   authenticate,
   creatorAuthenticate,
   upload.single("productImage"),
-  productTransform,
   updateProductValidator,
   productController.updateProduct
+);
+productRouter.patch(
+  "/:productId/update-story",
+  authenticate,
+  creatorAuthenticate,
+  updateStoryValidator,
+  productController.updateStory
+);
+
+productRouter.patch(
+  "/:productId/pending-approval",
+  authenticate,
+  creatorAuthenticate,
+  productController.updateApprovePending
 );
 
 productRouter.get("/", productController.getAllProduct);

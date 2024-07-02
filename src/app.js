@@ -20,12 +20,15 @@ const historyRouter = require("./routes/history-route");
 const statRouter = require("./routes/stat-route");
 const stripeRouter = require("./routes/stripe-route");
 const tierRouter = require("./routes/tier-route");
+const path = require("path");
+const { IMAGE_DIR } = require("./constants");
 const app = express();
 
 app.use(cors());
 app.use(morgan("dev"));
 app.use(express.json());
 app.use(express.static(process.env.STATIC_DIR));
+app.use(express.static(IMAGE_DIR));
 
 app.use("/stripe", stripeRouter);
 app.use("/auth", authRouter);

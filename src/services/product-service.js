@@ -2,7 +2,8 @@ const { APPROVAL_STATUS_ID, PRODUCT_STATUS_ID } = require("../constants");
 const prisma = require("../models/prisma");
 const productService = {};
 
-productService.createProduct = (data) => prisma.product.create({ data });
+productService.createProduct = (data) =>
+  prisma.product.create({ data, include: { creator: true } });
 
 productService.findProductByCreatorIdAndProductId = (creatorId, productId) =>
   prisma.product.findFirst({

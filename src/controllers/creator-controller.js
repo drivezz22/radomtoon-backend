@@ -35,8 +35,9 @@ creatorController.updateProfile = tryCatch(async (req, res) => {
     await uploadService.delete(existCreator.productImage);
   }
   const profileImage = await uploadService.upload(req.file.path);
-  await creatorService.updateInfo(+id, { profileImage });
-  res.status(200).json({ message: "Profile image is updated" });
+  const user = await creatorService.updateInfo(+id, { profileImage });
+  delete user.password;
+  res.status(200).json({ message: "Profile image is updated", user });
 });
 
 module.exports = creatorController;

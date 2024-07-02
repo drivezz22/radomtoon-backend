@@ -207,8 +207,9 @@ authController.updateProfile = tryCatch(async (req, res) => {
     await uploadService.delete(existUser.productImage);
   }
   const profileImage = await uploadService.upload(req.file.path);
-  await userService.update(+id, { profileImage });
-  res.status(200).json({ message: "Profile image is updated" });
+  const user = await userService.update(+id, { profileImage });
+  delete user.password;
+  res.status(200).json({ message: "Profile image is updated", user });
 });
 
 module.exports = authController;

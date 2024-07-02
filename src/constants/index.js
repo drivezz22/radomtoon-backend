@@ -1,4 +1,4 @@
-exports.IMAGE_DIR = "./src/images";
+exports.IMAGE_DIR = "./public/images";
 
 exports.IS_CREATOR_ACCEPT_STATUS = {
   PENDING: 1,

@@ -28,10 +28,6 @@ productService.updateProductById = (id, data) =>
 
 productService.getAllProduct = () =>
   prisma.product.findMany({
-    where: {
-      approvalStatusId: APPROVAL_STATUS_ID.SUCCESS,
-      productStatusId: { not: PRODUCT_STATUS_ID.FAILED },
-    },
     orderBy: { createdAt: "desc" },
     include: { productMilestones: true, productTiers: true, creator: true },
   });

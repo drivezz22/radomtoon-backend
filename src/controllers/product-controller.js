@@ -261,7 +261,7 @@ productController.getAllProduct = tryCatch(async (req, res) => {
   const allProduct = await productService.getAllProduct();
   const dropCreatorAllProduct = allProduct.map((el) => {
     el.creatorName = `${el.creator.firstName} ${el.creator.lastName}`;
-    el.creatorProfileImage = el.profileImage;
+    el.profileImage = el.creator.profileImage;
     delete el.creator;
     return el;
   });

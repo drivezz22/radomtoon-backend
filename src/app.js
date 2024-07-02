@@ -30,7 +30,7 @@ app.use(express.static(process.env.STATIC_DIR));
 app.use("/stripe", stripeRouter);
 app.use("/auth", authRouter);
 app.use("/admin", authenticate, adminAuthenticate, adminRouter);
-app.use("/creators", authenticate, creatorAuthenticate, creatorRouter);
+app.use("/creators", creatorRouter);
 app.use("/products", productRouter);
 app.use("/comments", authenticate, commentRouter);
 app.use("/milestones", authenticate, creatorAuthenticate, milestoneRouter);

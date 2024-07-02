@@ -25,4 +25,11 @@ authRouter.post(
 authRouter.post("/login", loginValidator, authController.login);
 authRouter.get("/get-me", authenticate, authController.getMe);
 
+authRouter.patch(
+  "/update-profile",
+  authenticate,
+  upload.single("profileImage"),
+  authController.updateProfile
+);
+
 module.exports = authRouter;

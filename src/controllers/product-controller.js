@@ -1,5 +1,10 @@
 const dayjs = require("dayjs");
-const { APPROVAL_STATUS_ID, TIER_RANK_ID, MIN_DEADLINE_DAYS } = require("../constants");
+const {
+  APPROVAL_STATUS_ID,
+  TIER_RANK_ID,
+  MIN_DEADLINE_DAYS,
+  IMAGE_DIR,
+} = require("../constants");
 const milestoneService = require("../services/milestone-service");
 const productService = require("../services/product-service");
 const createError = require("../utils/create-error");
@@ -9,6 +14,7 @@ const { sendEmail } = require("../utils/node-mailer-config");
 const { projectReject } = require("../utils/mail-content/project-reject");
 const { projectApprove } = require("../utils/mail-content/project-approve");
 const uploadService = require("../services/upload-service");
+const fs = require("fs-extra");
 
 const productController = {};
 
@@ -23,42 +29,48 @@ const validateDeadline = (deadline) => {
   }
 };
 
-productController.createProduct = tryCatch(async (req, res) => {
-  const { productName, goal, deadline, categoryId, productVideo, summaryDetail } =
-    req.body;
-  validateDeadline(deadline);
+productController.createProduct = async (req, res, next) => {
+  try {
+    const { productName, goal, deadline, categoryId, productVideo, summaryDetail } =
+      req.body;
+    validateDeadline(deadline);
 
-  if (!req.file) {
-    createError({
-      message: "Please select your product image by form data",
-      statusCode: 400,
+    if (!req.file) {
+      createError({
+        message: "Please select your product image by form data",
+        statusCode: 400,
+      });
+    }
+
+    const productImage = await uploadService.upload(req.file.path);
+
+    const productData = {
+      creatorId: req.user.id,
+      productName,
+      goal: +goal,
+      deadline: new Date(deadline),
+      categoryId: +categoryId,
+      productImage,
+      productVideo,
+      summaryDetail,
+    };
+
+    const productResult = await productService.createProduct(productData);
+
+    productResult.creatorName = `${productResult.creator.firstName} ${productResult.creator.lastName}`;
+    productResult.profileImage = productResult.creator.profileImage;
+    delete productResult.creator;
+
+    res.status(201).json({
+      message: "Product is created",
+      productDetail: productResult,
     });
+  } catch (err) {
+    next(err);
+  } finally {
+    fs.emptyDirSync(IMAGE_DIR);
   }
-
-  const productImage = await uploadService.upload(req.file.path);
-
-  const productData = {
-    creatorId: req.user.id,
-    productName,
-    goal: +goal,
-    deadline: new Date(deadline),
-    categoryId: +categoryId,
-    productImage,
-    productVideo,
-    summaryDetail,
-  };
-
-  const productResult = await productService.createProduct(productData);
-
-  productResult.creatorName = `${productResult.creator.firstName} ${productResult.creator.lastName}`;
-  productResult.profileImage = productResult.creator.profileImage;
-  delete productResult.creator;
-
-  res.status(201).json({
-    message: "Product is created",
-    productDetail: productResult,
-  });
-});
+};
 
 productController.deleteProduct = tryCatch(async (req, res) => {
   const { productId } = req.params;
@@ -94,76 +106,89 @@ productController.deleteProduct = tryCatch(async (req, res) => {
   return res.status(204).end();
 });
 
-productController.updateProduct = tryCatch(async (req, res) => {
-  const { productName, goal, deadline, story, categoryId, productVideo, summaryDetail } =
-    req.body;
+productController.updateProduct = async (req, res, next) => {
+  try {
+    const {
+      productName,
+      goal,
+      deadline,
+      story,
+      categoryId,
+      productVideo,
+      summaryDetail,
+    } = req.body;
 
-  const { productId } = req.params;
-  const existProduct = await productService.findProductByCreatorIdAndProductId(
-    req.user.id,
-    +productId
-  );
+    const { productId } = req.params;
+    const existProduct = await productService.findProductByCreatorIdAndProductId(
+      req.user.id,
+      +productId
+    );
 
-  if (!existProduct) {
-    createError({
-      message: "No this product in DB",
-      statusCode: 400,
-    });
-  }
-
-  if (existProduct.approvalStatusId === APPROVAL_STATUS_ID.PENDING) {
-    createError({
-      message: "Product is already approved",
-      statusCode: 400,
-    });
-  }
-
-  if (existProduct.approvalStatusId === APPROVAL_STATUS_ID.SUCCESS) {
-    createError({
-      message: "Product is pending approval",
-      statusCode: 400,
-    });
-  }
-
-  if (deadline) {
-    validateDeadline(deadline);
-  }
-
-  let productImage;
-  if (req.file) {
-    if (existProduct.productImage) {
-      await uploadService.delete(existProduct.productImage);
+    if (!existProduct) {
+      createError({
+        message: "No this product in DB",
+        statusCode: 400,
+      });
     }
-    productImage = await uploadService.upload(req.file.path);
-  } else if (req.body.productImage) {
-    productImage = req.body.productImage;
+
+    if (existProduct.approvalStatusId === APPROVAL_STATUS_ID.PENDING) {
+      createError({
+        message: "Product is already approved",
+        statusCode: 400,
+      });
+    }
+
+    if (existProduct.approvalStatusId === APPROVAL_STATUS_ID.SUCCESS) {
+      createError({
+        message: "Product is pending approval",
+        statusCode: 400,
+      });
+    }
+
+    if (deadline) {
+      validateDeadline(deadline);
+    }
+
+    let productImage;
+    if (req.file) {
+      if (existProduct.productImage) {
+        await uploadService.delete(existProduct.productImage);
+      }
+      productImage = await uploadService.upload(req.file.path);
+    } else if (req.body.productImage) {
+      productImage = req.body.productImage;
+    }
+
+    const productData = {
+      productName,
+      goal: +goal,
+      deadline: deadline ? new Date(deadline) : undefined,
+      story,
+      categoryId: +categoryId,
+      productImage,
+      productVideo,
+      summaryDetail,
+    };
+
+    const filteredProductData = Object.fromEntries(
+      Object.entries(productData).filter(([_, v]) => v != null)
+    );
+
+    const productResult = await productService.updateProductById(
+      +productId,
+      filteredProductData
+    );
+
+    res.status(200).json({
+      message: "Product is updated",
+      productDetail: productResult,
+    });
+  } catch (err) {
+    next(err);
+  } finally {
+    fs.emptyDirSync(IMAGE_DIR);
   }
-
-  const productData = {
-    productName,
-    goal: +goal,
-    deadline: deadline ? new Date(deadline) : undefined,
-    story,
-    categoryId: +categoryId,
-    productImage,
-    productVideo,
-    summaryDetail,
-  };
-
-  const filteredProductData = Object.fromEntries(
-    Object.entries(productData).filter(([_, v]) => v != null)
-  );
-
-  const productResult = await productService.updateProductById(
-    +productId,
-    filteredProductData
-  );
-
-  res.status(200).json({
-    message: "Product is updated",
-    productDetail: productResult,
-  });
-});
+};
 
 productController.updateStory = tryCatch(async (req, res) => {
   const { productId } = req.params;

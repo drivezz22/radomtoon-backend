@@ -13,7 +13,7 @@ milestoneRouter.patch(
   "/:milestoneId/send-evidence",
   upload.single("evidenceImage"),
   updateEvidenceMilestoneValidator,
-  milestoneController.updateMilestone
+  milestoneController.updateMilestoneEvidence
 );
 
 milestoneRouter.post(

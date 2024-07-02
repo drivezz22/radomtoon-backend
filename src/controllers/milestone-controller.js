@@ -67,7 +67,7 @@ const checkUnfinishedMilestones = async (existMilestone) => {
   }
 };
 
-milestoneController.updateMilestone = async (req, res, next) => {
+milestoneController.updateMilestoneEvidence = async (req, res, next) => {
   try {
     const { milestoneId } = req.params;
     const data = req.input;

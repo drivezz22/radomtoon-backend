@@ -50,6 +50,10 @@ productController.createProduct = tryCatch(async (req, res) => {
 
   const productResult = await productService.createProduct(productData);
 
+  productResult.creatorName = `${productResult.creator.firstName} ${productResult.creator.lastName}`;
+  productResult.profileImage = productResult.creator.profileImage;
+  delete productResult.creator;
+
   res.status(201).json({
     message: "Product is created",
     productDetail: productResult,

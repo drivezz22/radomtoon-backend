@@ -1,10 +1,5 @@
 const dayjs = require("dayjs");
-const {
-  APPROVAL_STATUS_ID,
-  USER_ROLE,
-  TIER_RANK_ID,
-  MIN_DEADLINE_DAYS,
-} = require("../constants");
+const { APPROVAL_STATUS_ID, TIER_RANK_ID, MIN_DEADLINE_DAYS } = require("../constants");
 const milestoneService = require("../services/milestone-service");
 const productService = require("../services/product-service");
 const createError = require("../utils/create-error");

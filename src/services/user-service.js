@@ -7,5 +7,6 @@ userService.findUserByPhone = (phone) => prisma.user.findFirst({ where: { phone 
 userService.findUserById = (id) => prisma.user.findUnique({ where: { id } });
 
 userService.createUser = (data) => prisma.user.create({ data });
+userService.update = (id, data) => prisma.user.update({ data, where: { id } });
 
 module.exports = userService;

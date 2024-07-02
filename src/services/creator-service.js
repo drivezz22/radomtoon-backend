@@ -25,4 +25,9 @@ creatorService.findAllCreatorPending = () =>
 
 creatorService.rejectCreatorById = (id) => prisma.creator.delete({ where: { id } });
 
+creatorService.findAllCreator = () =>
+  prisma.creator.findMany({
+    where: { isCreatorAcceptId: IS_CREATOR_ACCEPT_STATUS.ACCEPTED },
+  });
+
 module.exports = creatorService;

@@ -35,8 +35,6 @@ exports.updateEvidenceMilestoneValidator = (req, res, next) =>
   validatorWrapper(milestoneValidateSchema.updateEvidence, req, res, next);
 exports.failedApprovalMilestoneValidator = (req, res, next) =>
   validatorWrapper(milestoneValidateSchema.failedApproval, req, res, next);
-exports.updateStoryValidator = (req, res, next) =>
-  validatorWrapper(productValidateSchema.updateStory, req, res, next);
 exports.createMilestoneValidator = (req, res, next) =>
   validatorWrapper(milestoneValidateSchema.create, req, res, next);
 exports.updateMilestoneValidator = (req, res, next) =>

@@ -22,10 +22,6 @@ productValidateSchema.updateProduct = Joi.object({
   summaryDetail: Joi.string().trim().allow("", null),
 });
 
-productValidateSchema.updateStory = Joi.object({
-  story: Joi.string().required(),
-});
-
 productValidateSchema.failApproval = Joi.object({
   comment: Joi.string().required(),
 });

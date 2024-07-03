@@ -3,7 +3,15 @@ const prisma = require("../models/prisma");
 const productService = {};
 
 productService.createProduct = (data) =>
-  prisma.product.create({ data, include: { creator: true } });
+  prisma.product.create({
+    data,
+    include: {
+      productMilestones: true,
+      productTiers: true,
+      creator: true,
+      supportProducts: true,
+    },
+  });
 
 productService.findProductByCreatorIdAndProductId = (creatorId, productId) =>
   prisma.product.findFirst({
@@ -25,19 +33,38 @@ productService.findProductById = (productId) =>
 productService.deleteProductById = (id) => prisma.product.deleteMany({ where: { id } });
 
 productService.updateProductById = (id, data) =>
-  prisma.product.update({ data, where: { id } });
+  prisma.product.update({
+    data,
+    where: { id },
+    include: {
+      productMilestones: true,
+      productTiers: true,
+      creator: true,
+      supportProducts: true,
+    },
+  });
 
 productService.getAllProduct = () =>
   prisma.product.findMany({
     orderBy: { createdAt: "desc" },
-    include: { productMilestones: true, productTiers: true, creator: true },
+    include: {
+      productMilestones: true,
+      productTiers: true,
+      creator: true,
+      supportProducts: true,
+    },
   });
 
 productService.getAllProductByCreatorId = (creatorId) =>
   prisma.product.findMany({
     where: { creatorId },
     orderBy: { createdAt: "desc" },
-    include: { productMilestones: true, productTiers: true, creator: true },
+    include: {
+      productMilestones: true,
+      productTiers: true,
+      creator: true,
+      supportProducts: true,
+    },
   });
 
 productService.getAllProductForAdmin = () =>

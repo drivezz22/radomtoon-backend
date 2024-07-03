@@ -59,7 +59,9 @@ productController.createProduct = async (req, res, next) => {
 
     productResult.creatorName = `${productResult.creator.firstName} ${productResult.creator.lastName}`;
     productResult.profileImage = productResult.creator.profileImage;
+    productResult.supporterCount = productResult.supportProducts.length;
     delete productResult.creator;
+    delete productResult.supportProducts;
 
     res.status(201).json({
       message: "Product is created",
@@ -118,6 +120,8 @@ productController.updateProduct = async (req, res, next) => {
       summaryDetail,
     } = req.body;
 
+    validateDeadline(deadline);
+
     const { productId } = req.params;
     const existProduct = await productService.findProductByCreatorIdAndProductId(
       req.user.id,
@@ -161,15 +165,14 @@ productController.updateProduct = async (req, res, next) => {
 
     const productData = {
       productName,
-      goal: +goal,
+      goal: +goal || undefined,
       deadline: deadline ? new Date(deadline) : undefined,
       story,
-      categoryId: +categoryId,
+      categoryId: +categoryId || undefined,
       productImage,
       productVideo,
       summaryDetail,
     };
-
     const filteredProductData = Object.fromEntries(
       Object.entries(productData).filter(([_, v]) => v != null)
     );
@@ -178,6 +181,12 @@ productController.updateProduct = async (req, res, next) => {
       +productId,
       filteredProductData
     );
+
+    productResult.creatorName = `${productResult.creator.firstName} ${productResult.creator.lastName}`;
+    productResult.profileImage = productResult.creator.profileImage;
+    productResult.supporterCount = productResult.supportProducts.length;
+    delete productResult.creator;
+    delete productResult.supportProducts;
 
     res.status(200).json({
       message: "Product is updated",
@@ -221,7 +230,11 @@ productController.updateStory = tryCatch(async (req, res) => {
   }
 
   const productResult = await productService.updateProductById(+productId, data);
-
+  productResult.creatorName = `${productResult.creator.firstName} ${productResult.creator.lastName}`;
+  productResult.profileImage = productResult.creator.profileImage;
+  productResult.supporterCount = productResult.supportProducts.length;
+  delete productResult.creator;
+  delete productResult.supportProducts;
   res.status(200).json({
     message: "Product story is updated",
     productDetail: productResult,
@@ -233,7 +246,9 @@ productController.getAllProductByCreatorId = tryCatch(async (req, res) => {
   const dropCreatorAllProduct = allProduct.map((el) => {
     el.creatorName = `${el.creator.firstName} ${el.creator.lastName}`;
     el.creatorProfileImage = el.profileImage;
+    el.supporterCount = el.supportProducts.length;
     delete el.creator;
+    delete el.supportProducts;
     return el;
   });
   return res.status(200).json({ productList: dropCreatorAllProduct });
@@ -291,7 +306,9 @@ productController.getAllProduct = tryCatch(async (req, res) => {
   const dropCreatorAllProduct = allProduct.map((el) => {
     el.creatorName = `${el.creator.firstName} ${el.creator.lastName}`;
     el.profileImage = el.creator.profileImage;
+    el.supporterCount = el.supportProducts.length;
     delete el.creator;
+    delete el.supportProducts;
     return el;
   });
   return res.status(200).json({ productList: dropCreatorAllProduct });

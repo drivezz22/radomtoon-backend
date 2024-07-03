@@ -38,7 +38,6 @@ productRouter.patch(
   "/:productId/update-story",
   authenticate,
   creatorAuthenticate,
-  updateStoryValidator,
   productController.updateStory
 );
 

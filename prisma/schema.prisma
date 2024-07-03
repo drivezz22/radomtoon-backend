@@ -146,13 +146,13 @@ enum ProvinceEnum {
 
 model Comment {
   id        Int      @id @default(autoincrement())
-  userId    Int
+  userId    Int?
   productId Int
   comment   String   @db.Text
   createdAt DateTime @default(now()) @db.Timestamp(0)
   updatedAt DateTime @updatedAt @db.Timestamp(0)
 
-  user    User    @relation(fields: [userId], references: [id])
+  user    User?   @relation(fields: [userId], references: [id])
   product Product @relation(fields: [productId], references: [id])
 }
 

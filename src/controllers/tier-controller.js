@@ -132,6 +132,10 @@ tierController.deleteTier = tryCatch(async (req, res) => {
     return res.status(204).end();
   }
 
+  if (existTier.tierImage) {
+    await uploadService.delete(existTier.tierImage);
+  }
+
   await tierService.deleteTier(+tierId);
   res.status(204).json({ message: "Tier deleted" });
 });

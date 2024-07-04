@@ -378,7 +378,12 @@ productController.passApproval = tryCatch(async (req, res) => {
 
 productController.getPendingApprovalProduct = tryCatch(async (req, res) => {
   const pendingApprovalProduct = await productService.getPendingApprovalProduct();
-  res.status(200).json({ pendingApprovalProduct });
+  res.status(200).json({
+    pendingApprovalProduct: pendingApprovalProduct.map((product) => ({
+      id: product.id,
+      productName: product.productName,
+    })),
+  });
 });
 
 module.exports = productController;

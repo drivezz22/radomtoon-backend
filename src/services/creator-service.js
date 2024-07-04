@@ -21,6 +21,7 @@ creatorService.updateInfo = (id, data) => prisma.creator.update({ data, where: {
 creatorService.findAllCreatorPending = () =>
   prisma.creator.findMany({
     where: { isCreatorAcceptId: IS_CREATOR_ACCEPT_STATUS.PENDING },
+    include: { province: true },
   });
 
 creatorService.rejectCreatorById = (id) => prisma.creator.delete({ where: { id } });

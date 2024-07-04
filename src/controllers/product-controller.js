@@ -18,6 +18,12 @@ const fs = require("fs-extra");
 
 const productController = {};
 
+const initMilestoneData = [
+  { milestoneRankId: 1, milestoneDetail: "fill you milestone" },
+  { milestoneRankId: 2, milestoneDetail: "fill you milestone" },
+  { milestoneRankId: 3, milestoneDetail: "fill you milestone" },
+];
+
 const validateDeadline = (deadline) => {
   const today = dayjs(new Date());
   const dateFromDB = dayjs(new Date(deadline));
@@ -55,7 +61,12 @@ productController.createProduct = async (req, res, next) => {
       summaryDetail,
     };
 
-    const productResult = await productService.createProduct(productData);
+    const createProductResult = await productService.createProduct(productData);
+    const mapMilestoneData = initMilestoneData.map((milestone) => {
+      return { ...milestone, productId: createProductResult.id };
+    });
+    await milestoneService.createManyMilestone(mapMilestoneData);
+    const productResult = await productService.findProductById(createProductResult.id);
 
     productResult.creatorName = `${productResult.creator.firstName} ${productResult.creator.lastName}`;
     productResult.profileImage = productResult.creator.profileImage;

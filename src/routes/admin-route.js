@@ -44,6 +44,7 @@ adminRouter.get(
 );
 
 adminRouter.get("/product/waiting-approval", productController.getPendingApprovalProduct);
+
 adminRouter.get("/stat/admin-stat", statController.getAdminStat);
 adminRouter.get("/stat/top-five", statController.getTopFiveCategories);
 adminRouter.get("/stat/total-fund-trend", statController.getTotalFundTrend);

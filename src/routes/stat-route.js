@@ -12,11 +12,13 @@ statRouter.get(
 );
 
 statRouter.get("/", statController.getStat);
+
 statRouter.get(
   "/product/:productId/fund-trend",
   creatorAuthenticate,
   statController.getProductFundTrend
 );
+
 statRouter.get(
   "/product/:productId/tier-stat",
   creatorAuthenticate,

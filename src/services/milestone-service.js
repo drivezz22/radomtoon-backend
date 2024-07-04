@@ -4,6 +4,7 @@ const prisma = require("../models/prisma");
 const milestoneService = {};
 
 milestoneService.createMilestone = (data) => prisma.productMilestone.create({ data });
+
 milestoneService.createManyMilestone = (dataList) =>
   prisma.productMilestone.createMany({ data: dataList });
 

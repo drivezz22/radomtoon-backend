@@ -4,7 +4,6 @@ const productController = require("../controllers/product-controller");
 const {
   createProductValidator,
   updateProductValidator,
-  updateStoryValidator,
 } = require("../middlewares/validator");
 const upload = require("../middlewares/upload");
 const authenticate = require("../middlewares/authenticate");

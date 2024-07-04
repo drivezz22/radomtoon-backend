@@ -27,7 +27,12 @@ productService.findProductById = (productId) =>
     where: {
       id: productId,
     },
-    include: { creator: true },
+    include: {
+      productMilestones: true,
+      productTiers: true,
+      creator: true,
+      supportProducts: true,
+    },
   });
 
 productService.deleteProductById = (id) => prisma.product.deleteMany({ where: { id } });

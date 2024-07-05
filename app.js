@@ -34,7 +34,7 @@ app.use("/auth", authRouter);
 app.use("/admin", authenticate, adminAuthenticate, adminRouter);
 app.use("/creators", creatorRouter);
 app.use("/products", productRouter);
-app.use("/comments", authenticate, commentRouter);
+app.use("/comments", commentRouter);
 app.use("/milestones", authenticate, creatorAuthenticate, milestoneRouter);
 app.use("/tiers", authenticate, creatorAuthenticate, tierRouter);
 app.use("/support-products", authenticate, supportProductRouter);

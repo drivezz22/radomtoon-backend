@@ -22,7 +22,41 @@ commentService.getCommentByProductId = (productId) =>
     where: { productId },
     include: { product: { include: { creator: true } }, user: true },
     orderBy: {
-      updatedAt: "desc",
+      createdAt: "desc",
+    },
+  });
+
+commentService.getAllComment = () =>
+  prisma.comment.findMany({
+    select: {
+      id: true,
+      userId: true,
+      comment: true,
+      productId: true,
+      createdAt: true,
+      product: {
+        select: {
+          creatorId: true,
+          creator: {
+            select: {
+              firstName: true,
+              lastName: true,
+              profileImage: true,
+            },
+          },
+        },
+      },
+      user: {
+        select: {
+          firstName: true,
+          lastName: true,
+          profileImage: true,
+        },
+      },
+    },
+    // include: { product: { include: { creator: true } }, user: true },
+    orderBy: {
+      createdAt: "desc",
     },
   });
 

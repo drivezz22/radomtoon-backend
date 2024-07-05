@@ -3,12 +3,14 @@ const prisma = require("../models/prisma");
 
 const milestoneService = {};
 
-milestoneService.createMilestone = (data) => prisma.productMilestone.create({ data });
+milestoneService.createMilestone = (data) =>
+  prisma.productMilestone.create({ data });
 
 milestoneService.createManyMilestone = (dataList) =>
   prisma.productMilestone.createMany({ data: dataList });
 
-milestoneService.deleteById = (id) => prisma.productMilestone.delete({ where: { id } });
+milestoneService.deleteById = (id) =>
+  prisma.productMilestone.delete({ where: { id } });
 
 milestoneService.deleteByProductId = (productId) =>
   prisma.productMilestone.deleteMany({ where: { productId } });
@@ -23,7 +25,18 @@ milestoneService.getMilestoneById = (id) =>
   });
 
 milestoneService.updateMilestoneById = (id, data) =>
-  prisma.productMilestone.update({ data, where: { id } });
+  prisma.productMilestone.update({
+    data,
+    select: {
+      id: true,
+      productId: true,
+      milestoneRankId: true,
+      evidenceTextDetail: true,
+      evidenceImage: true,
+      product: { select: { productName: true } },
+    },
+    where: { id },
+  });
 
 milestoneService.failApproval = (id) =>
   prisma.productMilestone.update({
@@ -40,9 +53,20 @@ milestoneService.passApproval = (id) =>
 milestoneService.getPendingApprovalMilestone = () =>
   prisma.productMilestone.findMany({
     where: { approvalStatusId: APPROVAL_STATUS_ID.PENDING },
+    select: {
+      id: true,
+      productId: true,
+      milestoneRankId: true,
+      evidenceTextDetail: true,
+      evidenceImage: true,
+      product: { select: { productName: true } },
+    },
   });
 
-milestoneService.getMilestoneByProductIdAndRankId = (productId, milestoneRankId) =>
+milestoneService.getMilestoneByProductIdAndRankId = (
+  productId,
+  milestoneRankId
+) =>
   prisma.productMilestone.findFirst({
     where: { productId, milestoneRankId },
     include: { product: true },

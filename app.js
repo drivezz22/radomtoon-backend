@@ -39,7 +39,7 @@ app.use("/milestones", authenticate, creatorAuthenticate, milestoneRouter);
 app.use("/tiers", authenticate, creatorAuthenticate, tierRouter);
 app.use("/support-products", authenticate, supportProductRouter);
 app.use("/histories", authenticate, historyRouter);
-app.use("/stats", authenticate, statRouter);
+app.use("/stats", statRouter);
 
 // nodeCron("*/10 * * * *", checkDeadline);
 

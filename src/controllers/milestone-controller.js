@@ -96,6 +96,7 @@ milestoneController.updateMilestoneEvidence = async (req, res, next) => {
     }
 
     data.approvalStatusId = APPROVAL_STATUS_ID.PENDING;
+    console.log(data);
     const updateMilestone = await milestoneService.updateMilestoneById(
       +milestoneId,
       data

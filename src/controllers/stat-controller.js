@@ -9,7 +9,7 @@ const { MONTH_NAME_MAP, PRODUCT_STATUS_ID } = require("../constants");
 const statController = {};
 
 const getCommonStats = async () => {
-  const successProjects = await productService.getAllSuccessProject();
+  const successProjects = await productService.getAllProject();
   const supportProjects = await supportProductService.getSupport();
 
   return {

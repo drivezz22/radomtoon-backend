@@ -132,6 +132,12 @@ productService.getAllSuccessProject = () =>
     include: { supportProducts: { include: { tier: true } } },
   });
 
+productService.getAllProject = () =>
+  prisma.product.findMany({
+    where: { approvalStatusId: APPROVAL_STATUS_ID.SUCCESS },
+    include: { supportProducts: { include: { tier: true } } },
+  });
+
 productService.getAllSuccessProjectFilterByStartEndDate = (startDate, endDate) =>
   prisma.product.findMany({
     where: {

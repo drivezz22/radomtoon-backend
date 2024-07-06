@@ -30,13 +30,6 @@ const authenticate = tryCatch(async (req, res, next) => {
     createError({ message: "The user was not found", statusCode: 400 });
   }
 
-  if (payload.role === USER_ROLE.CREATOR) {
-    const product = await productService.getAllProductByCreatorId(payload.id);
-    if (product.length > 0) {
-      console.log(product);
-    }
-  }
-
   delete user.password;
   user.role = payload.role;
 

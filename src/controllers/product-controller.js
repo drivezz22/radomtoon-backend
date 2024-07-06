@@ -256,7 +256,7 @@ productController.getAllProductByCreatorId = tryCatch(async (req, res) => {
   const allProduct = await productService.getAllProductByCreatorId(req.user.id);
   const dropCreatorAllProduct = allProduct.map((el) => {
     el.creatorName = `${el.creator.firstName} ${el.creator.lastName}`;
-    el.creatorProfileImage = el.profileImage;
+    el.creatorProfileImage = el.creator.profileImage;
     el.supporterCount = el.supportProducts.length;
     delete el.creator;
     delete el.supportProducts;

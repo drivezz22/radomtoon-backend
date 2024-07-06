@@ -2,6 +2,7 @@ const { USER_ROLE } = require("../constants");
 const adminService = require("../services/admin-service");
 const creatorService = require("../services/creator-service");
 const jwtService = require("../services/jwt-service");
+const productService = require("../services/product-service");
 const userService = require("../services/user-service");
 const createError = require("../utils/create-error");
 const tryCatch = require("../utils/try-catch-wrapper");
@@ -14,6 +15,7 @@ const authenticate = tryCatch(async (req, res, next) => {
 
   const accessToken = authorization.split(" ")[1];
   const payload = jwtService.verify(accessToken);
+
   let user;
 
   if (payload.role === USER_ROLE.SUPPORTER) {
@@ -27,9 +29,19 @@ const authenticate = tryCatch(async (req, res, next) => {
   if (!user) {
     createError({ message: "The user was not found", statusCode: 400 });
   }
+
+  if (payload.role === USER_ROLE.CREATOR) {
+    const product = await productService.getAllProductByCreatorId(payload.id);
+    if (product.length > 0) {
+      console.log(product);
+    }
+  }
+
   delete user.password;
   user.role = payload.role;
+
   req.user = user;
+
   next();
 });
 

@@ -28,6 +28,18 @@ creatorService.rejectCreatorById = (id) => prisma.creator.delete({ where: { id }
 
 creatorService.findAllCreator = () =>
   prisma.creator.findMany({
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      profileImage: true,
+      biography: true,
+      website: true,
+      createdAt: true,
+      products: {
+        select: { id: true, supportProducts: { select: { userId: true } } },
+      },
+    },
     where: { isCreatorAcceptId: IS_CREATOR_ACCEPT_STATUS.ACCEPTED },
   });
 

@@ -1,4 +1,4 @@
-const { PRODUCT_STATUS_ID } = require("../constants");
+const { PRODUCT_STATUS_ID, CATEGORIES_TYPE_NAME } = require("../constants");
 const supportProductService = require("../services/support-product-service");
 const tryCatch = require("../utils/try-catch-wrapper");
 
@@ -13,13 +13,16 @@ historyController.getHistoryBySupporterId = tryCatch(async (req, res) => {
       el.product.productStatus.id === PRODUCT_STATUS_ID.SUCCESS
         ? el.deliveryStatus.status
         : "NOT AVAILABLE";
-    const fundingStatus = el.deletedAt ? "CANCEL" : el.product.productStatus.status;
+    const fundingStatus = el.deletedAt ? "CANCELED" : el.product.productStatus.status;
     const histories = {
       productId: el.product.id,
       projectName: el.product.productName,
+      projectImage: el.product.productImage,
+      projectCategory: CATEGORIES_TYPE_NAME[el.product.categoryId],
+      tierId: el.tierId,
       tierName: el.tier.tierName,
       price: el.tier.price,
-      data: el.createdAt,
+      date: el.createdAt,
       fundingStatus,
       deliveryStatus,
     };

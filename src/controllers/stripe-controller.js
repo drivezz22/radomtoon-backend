@@ -11,7 +11,7 @@ stripeController.createIntent = tryCatch(async (req, res) => {
   const paymentIntent = await stripe.paymentIntents.create({
     currency: "THB",
     amount: tierData.price * 100,
-    automatic_payment_methods: { enabled: true },
+    automatic_payment_methods: { enabled: true, allow_redirects: "never" },
   });
 
   res.status(200).send({

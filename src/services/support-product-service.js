@@ -4,7 +4,14 @@ const prisma = require("../models/prisma");
 const supportProductService = {};
 
 supportProductService.createSupportProduct = (data) =>
-  prisma.supportProduct.create({ data });
+  prisma.supportProduct.create({
+    data,
+    include: {
+      product: { include: { productStatus: true } },
+      tier: { include: { tierRank: true } },
+      deliveryStatus: true,
+    },
+  });
 
 supportProductService.getSupportBySupporterIdAndProductId = (userId, productId) =>
   prisma.supportProduct.findFirst({
@@ -32,6 +39,9 @@ supportProductService.getSupportBySupporterId = (supporterId) =>
       product: { include: { productStatus: true } },
       tier: { include: { tierRank: true } },
       deliveryStatus: true,
+    },
+    orderBy: {
+      createdAt: "desc",
     },
   });
 

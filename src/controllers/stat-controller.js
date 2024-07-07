@@ -11,11 +11,12 @@ const statController = {};
 const getCommonStats = async () => {
   const successProjects = await productService.getAllProject();
   const supportProjects = await supportProductService.getSupport();
+  const supportProductFilter = supportProjects.filter((el) => el.deletedAt === null);
 
   return {
     totalProjectCount: successProjects.length,
     totalFunding: successProjects.reduce((acc, { totalFund }) => acc + totalFund, 0),
-    totalContributions: supportProjects.length,
+    totalContributions: supportProductFilter.length,
   };
 };
 
@@ -121,11 +122,12 @@ statController.getStatByProduct = tryCatch(async (req, res) => {
 
 statController.getStat = tryCatch(async (req, res) => {
   const { totalProjectCount, totalFunding, totalContributions } = await getCommonStats();
-
+  const totalFundString = String(totalFunding);
+  const estimatedFunding = +totalFundString[0] * 10 ** (totalFundString.length - 1);
   res.status(200).json({
     stat: {
       projectSupport: totalProjectCount,
-      towardIdea: totalFunding,
+      towardIdea: estimatedFunding,
       contribution: totalContributions,
     },
   });

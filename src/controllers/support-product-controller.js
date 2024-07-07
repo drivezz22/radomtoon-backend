@@ -7,6 +7,7 @@ const {
   DELIVERY_STATUS_ID,
   APPROVAL_STATUS_ID,
   MILESTONE_RANK_MUST_PASS,
+  CATEGORIES_TYPE_NAME,
 } = require("../constants");
 const supportProductService = require("../services/support-product-service");
 const productService = require("../services/product-service");
@@ -67,9 +68,29 @@ supportProductController.createSupportProduct = tryCatch(async (req, res) => {
     supportProductData
   );
 
+  const deliveryStatus =
+    supportResult.product.productStatus.id === PRODUCT_STATUS_ID.SUCCESS
+      ? supportResult.deliveryStatus.status
+      : "NOT AVAILABLE";
+  const fundingStatus = supportResult.deletedAt
+    ? "CANCELED"
+    : supportResult.product.productStatus.status;
+  const supportResultSelect = {
+    productId: supportResult.product.id,
+    projectName: supportResult.product.productName,
+    projectImage: supportResult.product.productImage,
+    projectCategory: CATEGORIES_TYPE_NAME[supportResult.product.categoryId],
+    tierId: supportResult.tierId,
+    tierName: supportResult.tier.tierName,
+    price: supportResult.tier.price,
+    date: supportResult.createdAt,
+    fundingStatus,
+    deliveryStatus,
+  };
+
   res
     .status(201)
-    .json({ message: "Product is supported", supportProduct: supportResult });
+    .json({ message: "Product is supported", supporterHistory: supportResultSelect });
 });
 
 supportProductController.cancelSupport = tryCatch(async (req, res) => {

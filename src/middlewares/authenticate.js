@@ -2,7 +2,6 @@ const { USER_ROLE } = require("../constants");
 const adminService = require("../services/admin-service");
 const creatorService = require("../services/creator-service");
 const jwtService = require("../services/jwt-service");
-const productService = require("../services/product-service");
 const userService = require("../services/user-service");
 const createError = require("../utils/create-error");
 const tryCatch = require("../utils/try-catch-wrapper");

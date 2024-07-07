@@ -45,6 +45,21 @@ supportProductService.getSupportBySupporterId = (supporterId) =>
     },
   });
 
+supportProductService.getLatestCategory = (supporterId) =>
+  prisma.supportProduct.findFirst({
+    select: {
+      product: {
+        select: {
+          categoryId: true,
+        },
+      },
+    },
+    where: { userId: supporterId },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+
 supportProductService.getSupportByProductId = (productId) =>
   prisma.supportProduct.findMany({
     where: { productId },

@@ -54,4 +54,7 @@ productRouter.get(
   creatorAuthenticate,
   productController.getAllProductByCreatorId
 );
+
+productRouter.get("/five-product", productController.getFiveProduct);
+
 module.exports = productRouter;

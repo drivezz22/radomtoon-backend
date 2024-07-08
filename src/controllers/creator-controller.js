@@ -93,8 +93,8 @@ creatorController.getDeliveryStatus = tryCatch(async (req, res) => {
     const data = {};
     const deliveryStatus =
       el.product.productStatus.id !== PRODUCT_STATUS_ID.SUCCESS &&
-      approvalStatusObj[1] === APPROVAL_STATUS_ID.SUCCESS &&
-      approvalStatusObj[2] === APPROVAL_STATUS_ID.SUCCESS
+      approvalStatusObj[1] !== APPROVAL_STATUS_ID.SUCCESS ||
+      approvalStatusObj[2] !== APPROVAL_STATUS_ID.SUCCESS
         ? "NOT AVAILABLE"
         : el.deliveryStatus.status;
     data.productStatusId = el.product.productStatus.id;

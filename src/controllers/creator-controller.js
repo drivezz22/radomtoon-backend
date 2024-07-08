@@ -1,11 +1,11 @@
 const dayjs = require("dayjs");
-const { IMAGE_DIR } = require("../constants");
+const { IMAGE_DIR, PRODUCT_STATUS_ID, APPROVAL_STATUS_ID } = require("../constants");
 const creatorService = require("../services/creator-service");
-const productService = require("../services/product-service");
 const uploadService = require("../services/upload-service");
 const createError = require("../utils/create-error");
 const tryCatch = require("../utils/try-catch-wrapper");
 const fs = require("fs-extra");
+const supportProductService = require("../services/support-product-service");
 
 const creatorController = {};
 
@@ -80,6 +80,33 @@ creatorController.getCreator = tryCatch(async (req, res) => {
   });
 
   res.status(200).json({ creatorList: filterValueList });
+});
+
+creatorController.getDeliveryStatus = tryCatch(async (req, res) => {
+  const { productId } = req.params;
+  const deliveryStatus = await supportProductService.getSupportByProductId(+productId);
+  const deliveryStatusMap = deliveryStatus.map((el) => {
+    const approvalStatusObj = {};
+    el.product.productMilestones.forEach((element) => {
+      approvalStatusObj[element.milestoneRankId] = element.approvalStatusId;
+    });
+    const data = {};
+    const deliveryStatus =
+      el.product.productStatus.id !== PRODUCT_STATUS_ID.SUCCESS &&
+      approvalStatusObj[1] === APPROVAL_STATUS_ID.SUCCESS &&
+      approvalStatusObj[2] === APPROVAL_STATUS_ID.SUCCESS
+        ? "NOT AVAILABLE"
+        : el.deliveryStatus.status;
+    data.productStatusId = el.product.productStatus.id;
+    data.productMilestones = el.productMilestones;
+    data.tierName = el.tier.tierName;
+    data.deliveryStatus = deliveryStatus;
+    data.supporterFirstName = el.user.firstName;
+    data.supporterLastName = el.user.lastName;
+    return data;
+  });
+
+  res.status(200).json({ deliveryList: deliveryStatusMap });
 });
 
 module.exports = creatorController;

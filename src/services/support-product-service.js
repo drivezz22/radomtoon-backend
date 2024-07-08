@@ -63,11 +63,23 @@ supportProductService.getLatestCategory = (supporterId) =>
 supportProductService.getSupportByProductId = (productId) =>
   prisma.supportProduct.findMany({
     where: { productId },
-    include: {
-      product: { include: { productStatus: true } },
-      tier: { include: { tierRank: true } },
+    select: {
+      product: {
+        select: {
+          productStatus: true,
+          totalFund: true,
+          availableFund: true,
+          productMilestones: {
+            select: {
+              milestoneRankId: true,
+              approvalStatusId: true,
+            },
+          },
+        },
+      },
+      tier: { select: { tierRank: true, tierName: true } },
       deliveryStatus: true,
-      user: true,
+      user: { select: { firstName: true, lastName: true, profileImage: true } },
     },
   });
 

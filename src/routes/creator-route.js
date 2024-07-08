@@ -24,4 +24,11 @@ creatorRouter.patch(
 );
 
 creatorRouter.get("/", creatorController.getCreator);
+creatorRouter.get(
+  "/product/:productId/delivery-status",
+  authenticate,
+  creatorAuthenticate,
+  creatorController.getDeliveryStatus
+);
+
 module.exports = creatorRouter;

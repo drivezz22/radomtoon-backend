@@ -79,7 +79,7 @@ supportProductService.getSupportByProductId = (productId) =>
       },
       tier: { select: { tierRank: true, tierName: true } },
       deliveryStatus: true,
-      user: { select: { firstName: true, lastName: true, profileImage: true } },
+      user: { select: { id: true, firstName: true, lastName: true, profileImage: true } },
     },
   });
 

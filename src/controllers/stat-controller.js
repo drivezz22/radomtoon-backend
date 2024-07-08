@@ -5,6 +5,7 @@ const createError = require("../utils/create-error");
 const tryCatch = require("../utils/try-catch-wrapper");
 const dayjs = require("dayjs");
 const { MONTH_NAME_MAP, PRODUCT_STATUS_ID } = require("../constants");
+const { categoryType } = require("../models/prisma");
 
 const statController = {};
 
@@ -26,15 +27,17 @@ const getDateRange = (year) => ({
 });
 
 const getFilteredProductsByMonth = async (startDate, endDate) => {
-  const allProducts = await productService.getAllSuccessProjectFilterByStartEndDate(
+  const allProducts = await productService.getAllSuccessfulOrPendingProjectsBetweenDates(
     startDate,
     endDate
   );
   return allProducts.map((el) => ({
-    productName: el.productName,
+    productId: el.id,
+    categoryId: el.categoryId,
+    category: el.category.category,
     totalFund: el.totalFund,
-    totalSupporter: el.supportProducts.length,
-    month: dayjs(el.deadline).format("MMM"),
+    supportProduct: el.supportProducts,
+    month: dayjs(el.createdAt).format("MMM"),
   }));
 };
 
@@ -138,13 +141,20 @@ statController.getTopFiveCategories = tryCatch(async (req, res) => {
   const products = await getFilteredProductsByMonth(startDate, endDate);
 
   const productDataAllMonth = MONTH_NAME_MAP.map((month) => {
-    const filteredProducts = products.filter((el) => el.month === month);
-    const topFiveByTotalFund = [...filteredProducts]
-      .sort(compareDesc("totalFund"))
-      .slice(0, 5);
-    const topFiveByTotalSupporter = [...filteredProducts]
-      .sort(compareDesc("totalSupporter"))
-      .slice(0, 5);
+    const topFiveByTotalFund = {};
+    const topFiveByTotalSupporter = {};
+    products
+      .filter((el) => el.month === month)
+      .forEach((product) => {
+        if (!topFiveByTotalFund[product.category]) {
+          topFiveByTotalFund[product.category] = 0;
+        }
+        if (!topFiveByTotalSupporter[product.category]) {
+          topFiveByTotalSupporter[product.category] = 0;
+        }
+        topFiveByTotalFund[product.category] += product.totalFund;
+        topFiveByTotalSupporter[product.category] += product.supportProduct.length;
+      });
 
     return { month, topFiveByTotalFund, topFiveByTotalSupporter };
   });

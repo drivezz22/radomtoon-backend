@@ -371,20 +371,22 @@ statController.getTierStat = tryCatch(async (req, res, next) => {
       +productId
     );
 
-  const combineData = existProduct.productTiers.map((item) => ({
-    label: item.tierName,
+  const combineData = existProduct.productTiers.map(({ tierName }) => ({
+    label: tierName,
     value: 0,
   }));
 
-  const combineTier = allSupportProduct.reduce((acc, { tier: { tierName, price } }) => {
-    const foundedIndex = acc.findIndex((el) => el.label === tierName);
-    if (foundedIndex !== -1) {
-      if (acc[foundedIndex].label === tierName) {
-        acc[foundedIndex].value = acc[foundedIndex].value + price;
+  const combineTier = allSupportProduct.reduce(
+    (acc, { tier: { tierName, price } }) => {
+      const foundedIndex = acc.findIndex((el) => el.label === tierName);
+      if (foundedIndex !== -1) {
+        acc[foundedIndex].value += price;
       }
-    }
-    return acc;
-  }, combineData);
+      return acc;
+    },
+    [...combineData]
+  );
+
   res.status(200).json({ combineTier });
 });
 

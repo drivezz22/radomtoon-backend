@@ -62,7 +62,7 @@ supportProductService.getLatestCategory = (supporterId) =>
 
 supportProductService.getSupportByProductId = (productId) =>
   prisma.supportProduct.findMany({
-    where: { productId },
+    where: { productId,deletedAt:null},
     select: {
       product: {
         select: {

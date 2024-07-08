@@ -17,7 +17,7 @@ productValidateSchema.updateProduct = Joi.object({
   goal: Joi.number().min(0).allow(null),
   deadline: Joi.date().greater("now").allow(null),
   categoryId: Joi.number().integer().min(1).max(10).allow(null),
-  productVideo: Joi.string().trim().allow(null),
+  productVideo: Joi.string().allow("", null),
   productImage: Joi.string().trim().allow("", null),
   summaryDetail: Joi.string().trim().allow("", null),
 });

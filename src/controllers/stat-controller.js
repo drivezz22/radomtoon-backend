@@ -5,7 +5,7 @@ const createError = require("../utils/create-error");
 const tryCatch = require("../utils/try-catch-wrapper");
 const dayjs = require("dayjs");
 const { MONTH_NAME_MAP, PRODUCT_STATUS_ID } = require("../constants");
-const axios = require('axios');
+const axios = require("axios");
 
 const statController = {};
 
@@ -85,10 +85,10 @@ statController.getAdminStat = tryCatch(async (req, res) => {
   );
 
   res.status(200).json([
-      { title: 'project supported', amount: totalProjectCount },
-      { title: 'towards ideas', amount: totalFunding, currency: 'THB' },
-      { title: 'contributions', amount: totalContributions },
-      { title: "RADOMTOON's profits", amount: totalWebProfit, currency: 'THB' },
+    { title: "project supported", amount: totalProjectCount },
+    { title: "towards ideas", amount: totalFunding, currency: "THB" },
+    { title: "contributions", amount: totalContributions },
+    { title: "RADOMTOON's profits", amount: totalWebProfit, currency: "THB" },
   ]);
 });
 
@@ -213,11 +213,9 @@ statController.getCreatorActive = tryCatch(async (req, res) => {
       : 0;
 
   res.status(200).json({
-
-      title: 'Active Creator',
-      value: currentMonthCount,
-      prev: lastMonthCount
-
+    title: "Active Creator",
+    value: currentMonthCount,
+    prev: lastMonthCount,
   });
 });
 
@@ -255,9 +253,9 @@ statController.getSupporterActive = tryCatch(async (req, res) => {
       : 0;
 
   res.status(200).json({
-      title: 'Active Supporter',
-      value: countSupporterCurrentMonth,
-      prev: countSupporterLastMonth
+    title: "Active Supporter",
+    value: countSupporterCurrentMonth,
+    prev: countSupporterLastMonth,
   });
 });
 
@@ -275,9 +273,9 @@ statController.getAverageFund = tryCatch(async (req, res) => {
 
   const averageFund =
     getAllSupportProduct.length > 0 ? totalFund / getAllSupportProduct.length : 0;
-  res.status(200).json({ 
-    title: 'Average Funding',
-    value: averageFund 
+  res.status(200).json({
+    title: "Average Funding",
+    value: averageFund,
   });
 });
 
@@ -289,7 +287,7 @@ statController.getCountProject = tryCatch(async (req, res) => {
   }, {});
 
   res.status(200).json({
-    title: 'Success Projects',
+    title: "Success Projects",
     value: statusCounts[PRODUCT_STATUS_ID.SUCCESS] || 0,
     total: approvalProducts.length,
   });
@@ -303,9 +301,9 @@ statController.getProjectOverview = tryCatch(async (req, res) => {
   }, {});
 
   res.status(200).json([
-    { label: 'Success', value: statusCounts[PRODUCT_STATUS_ID.SUCCESS] || 0 },
-    { label: 'Active', value: statusCounts[PRODUCT_STATUS_ID.PENDING] || 0 },
-    { label: 'Failed', value: statusCounts[PRODUCT_STATUS_ID.FAILED] || 0 },
+    { label: "Success", value: statusCounts[PRODUCT_STATUS_ID.SUCCESS] || 0 },
+    { label: "Active", value: statusCounts[PRODUCT_STATUS_ID.PENDING] || 0 },
+    { label: "Failed", value: statusCounts[PRODUCT_STATUS_ID.FAILED] || 0 },
   ]);
 });
 
@@ -360,7 +358,7 @@ statController.getTierStat = tryCatch(async (req, res, next) => {
     +productId
   );
 
-  if (!existProduct.length) {
+  if (!existProduct) {
     return res.status(200).json({ combineTier: [] });
   }
 
@@ -373,11 +371,20 @@ statController.getTierStat = tryCatch(async (req, res, next) => {
       +productId
     );
 
-  const combineTier = allSupportProduct.reduce((acc, { tier: { tierName, price } }) => {
-    acc[tierName] = (acc[tierName] || 0) + price;
-    return acc;
-  }, {});
+  const combineData = existProduct.productTiers.map((item) => ({
+    label: item.tierName,
+    value: 0,
+  }));
 
+  const combineTier = allSupportProduct.reduce((acc, { tier: { tierName, price } }) => {
+    const foundedIndex = acc.findIndex((el) => el.label === tierName);
+    if (foundedIndex !== -1) {
+      if (acc[foundedIndex].label === tierName) {
+        acc[foundedIndex].value = acc[foundedIndex].value + price;
+      }
+    }
+    return acc;
+  }, combineData);
   res.status(200).json({ combineTier });
 });
 
@@ -423,9 +430,11 @@ statController.getMapDensityByProduct = tryCatch(async (req, res, next) => {
   res.status(200).json({ provinceCount });
 });
 
-statController.getGeoJson = tryCatch(async (req,res) => {
-  const response = await axios.get('https://raw.githubusercontent.com/apisit/thailand.json/master/thailandwithdensity.json');
-    res.json(response.data);
-})
+statController.getGeoJson = tryCatch(async (req, res) => {
+  const response = await axios.get(
+    "https://raw.githubusercontent.com/apisit/thailand.json/master/thailandwithdensity.json"
+  );
+  res.json(response.data);
+});
 
 module.exports = statController;

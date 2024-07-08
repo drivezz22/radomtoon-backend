@@ -182,7 +182,10 @@ productService.getApprovalProduct = () =>
   });
 
 productService.checkCreatorIdMatchProductId = (creatorId, productId) =>
-  prisma.product.findMany({ where: { creatorId: creatorId, id: productId } });
+  prisma.product.findFirst({
+    where: { creatorId: creatorId, id: productId },
+    select: { id: true, productTiers: { select: { tierName: true } } },
+  });
 
 productService.updateApprovePending = (productId) =>
   prisma.product.update({

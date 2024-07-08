@@ -17,8 +17,6 @@ const { projectApprove } = require("../utils/mail-content/project-approve");
 const uploadService = require("../services/upload-service");
 const fs = require("fs-extra");
 const userService = require("../services/user-service");
-const creatorService = require("../services/creator-service");
-const adminService = require("../services/admin-service");
 const jwtService = require("../services/jwt-service");
 const supportProductService = require("../services/support-product-service");
 

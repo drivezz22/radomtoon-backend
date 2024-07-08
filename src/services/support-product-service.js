@@ -62,7 +62,7 @@ supportProductService.getLatestCategory = (supporterId) =>
 
 supportProductService.getSupportByProductId = (productId) =>
   prisma.supportProduct.findMany({
-    where: { productId,deletedAt:null},
+    where: { productId, deletedAt: null },
     select: {
       product: {
         select: {
@@ -109,12 +109,12 @@ supportProductService.getAllSupporterProductFilterByStartEndDateProductId = (
 ) =>
   prisma.supportProduct.findMany({
     where: {
+      productId: productId,
+      deletedAt: null,
       createdAt: {
         gte: startDate,
         lte: endDate,
       },
-      deletedAt: null,
-      productId,
     },
     include: { tier: true, user: true },
   });

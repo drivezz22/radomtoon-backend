@@ -52,6 +52,8 @@ adminRouter.get("/stat/creator-active", statController.getCreatorActive);
 adminRouter.get("/stat/supporter-active", statController.getSupporterActive);
 adminRouter.get("/stat/average-fund", statController.getAverageFund);
 adminRouter.get("/stat/count-project", statController.getCountProject);
+adminRouter.get("/stat/project-overview", statController.getProjectOverview);
 adminRouter.get("/stat/map-density", statController.getMapDensityAllProduct);
+adminRouter.get("/stat/geo-json", statController.getGeoJson)
 
 module.exports = adminRouter;

@@ -5,7 +5,7 @@ const createError = require("../utils/create-error");
 const tryCatch = require("../utils/try-catch-wrapper");
 const dayjs = require("dayjs");
 const { MONTH_NAME_MAP, PRODUCT_STATUS_ID } = require("../constants");
-const { categoryType } = require("../models/prisma");
+const axios = require('axios');
 
 const statController = {};
 
@@ -48,11 +48,9 @@ const getCumulativeFundsByMonth = (allSupportProducts, filterMonth) => {
       .filter((el) => el.month === month)
       .reduce((acc, item) => acc + item.fund, 0);
     cumulativeFund += totalFundMonth;
-    return { month, cumulativeFund };
+    return { label: month, fund: cumulativeFund };
   });
 };
-
-const compareDesc = (key) => (a, b) => b[key] - a[key];
 
 const getUniqueSupporters = (allSupportProduct) => {
   const uniqueSupporterSet = new Set();
@@ -86,14 +84,12 @@ statController.getAdminStat = tryCatch(async (req, res) => {
     0
   );
 
-  res.status(200).json({
-    stat: {
-      projectSupport: totalProjectCount,
-      towardIdea: totalFunding,
-      contribution: totalContributions,
-      webProfit: totalWebProfit,
-    },
-  });
+  res.status(200).json([
+      { title: 'project supported', amount: totalProjectCount },
+      { title: 'towards ideas', amount: totalFunding, currency: 'THB' },
+      { title: 'contributions', amount: totalContributions },
+      { title: "RADOMTOON's profits", amount: totalWebProfit, currency: 'THB' },
+  ]);
 });
 
 statController.getStatByProduct = tryCatch(async (req, res) => {
@@ -217,14 +213,11 @@ statController.getCreatorActive = tryCatch(async (req, res) => {
       : 0;
 
   res.status(200).json({
-    currentMonthCreatorActive: {
-      month: todayMonth,
-      count: currentMonthCount,
-    },
-    lastMonthCreatorActive: {
-      month: monthIndex > 0 ? MONTH_NAME_MAP[monthIndex - 1] : null,
-      count: lastMonthCount,
-    },
+
+      title: 'Active Creator',
+      value: currentMonthCount,
+      prev: lastMonthCount
+
   });
 });
 
@@ -262,14 +255,9 @@ statController.getSupporterActive = tryCatch(async (req, res) => {
       : 0;
 
   res.status(200).json({
-    currentMonthCreatorActive: {
-      month: todayMonth,
-      count: countSupporterCurrentMonth,
-    },
-    lastMonthCreatorActive: {
-      month: monthIndex > 0 ? MONTH_NAME_MAP[monthIndex - 1] : null,
-      count: countSupporterLastMonth,
-    },
+      title: 'Active Supporter',
+      value: countSupporterCurrentMonth,
+      prev: countSupporterLastMonth
   });
 });
 
@@ -287,7 +275,10 @@ statController.getAverageFund = tryCatch(async (req, res) => {
 
   const averageFund =
     getAllSupportProduct.length > 0 ? totalFund / getAllSupportProduct.length : 0;
-  res.status(200).json({ averageFund });
+  res.status(200).json({ 
+    title: 'Average Funding',
+    value: averageFund 
+  });
 });
 
 statController.getCountProject = tryCatch(async (req, res) => {
@@ -298,11 +289,24 @@ statController.getCountProject = tryCatch(async (req, res) => {
   }, {});
 
   res.status(200).json({
-    totalProject: approvalProducts.length,
-    pendingProject: statusCounts[PRODUCT_STATUS_ID.PENDING] || 0,
-    successProject: statusCounts[PRODUCT_STATUS_ID.SUCCESS] || 0,
-    failedProject: statusCounts[PRODUCT_STATUS_ID.FAILED] || 0,
+    title: 'Success Projects',
+    value: statusCounts[PRODUCT_STATUS_ID.SUCCESS] || 0,
+    total: approvalProducts.length,
   });
+});
+
+statController.getProjectOverview = tryCatch(async (req, res) => {
+  const approvalProducts = await productService.getApprovalProduct();
+  const statusCounts = approvalProducts.reduce((acc, { productStatusId }) => {
+    acc[productStatusId] = (acc[productStatusId] || 0) + 1;
+    return acc;
+  }, {});
+
+  res.status(200).json([
+    { label: 'Success', value: statusCounts[PRODUCT_STATUS_ID.SUCCESS] || 0 },
+    { label: 'Active', value: statusCounts[PRODUCT_STATUS_ID.PENDING] || 0 },
+    { label: 'Failed', value: statusCounts[PRODUCT_STATUS_ID.FAILED] || 0 },
+  ]);
 });
 
 statController.getProductFundTrend = tryCatch(async (req, res) => {
@@ -418,4 +422,10 @@ statController.getMapDensityByProduct = tryCatch(async (req, res, next) => {
 
   res.status(200).json({ provinceCount });
 });
+
+statController.getGeoJson = tryCatch(async (req,res) => {
+  const response = await axios.get('https://raw.githubusercontent.com/apisit/thailand.json/master/thailandwithdensity.json');
+    res.json(response.data);
+})
+
 module.exports = statController;

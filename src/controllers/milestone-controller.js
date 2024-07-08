@@ -69,6 +69,13 @@ milestoneController.updateMilestoneEvidence = async (req, res, next) => {
     checkMilestoneExistence(existMilestone);
     await checkUnfinishedMilestones(existMilestone);
 
+    if (existMilestone.approvalStatusId === APPROVAL_STATUS_ID.PENDING) {
+      createError({
+        message: "This milestone is not approved yet",
+        statusCode: 400,
+      });
+    }
+
     if (!existMilestone.evidenceImage && !req.file) {
       createError({
         message: "No image in DB and no evidence image in data",

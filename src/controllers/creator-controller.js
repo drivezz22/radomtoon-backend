@@ -103,6 +103,7 @@ creatorController.getDeliveryStatus = tryCatch(async (req, res) => {
     data.deliveryStatus = deliveryStatus;
     data.supporterFirstName = el.user.firstName;
     data.supporterLastName = el.user.lastName;
+    data.supporterId = el.user.id;
     return data;
   });
 

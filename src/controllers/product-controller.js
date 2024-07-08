@@ -392,7 +392,7 @@ productController.getPendingApprovalProduct = tryCatch(async (req, res) => {
 
 productController.getFiveProduct = tryCatch(async (req, res) => {
   const authorization = req.headers.authorization;
-  console.log("authorization", authorization);
+
   let user;
   if (authorization) {
     const accessToken = authorization.split(" ")[1];
@@ -402,6 +402,7 @@ productController.getFiveProduct = tryCatch(async (req, res) => {
       user = await userService.findUserById(payload.id);
     }
   }
+  const initFiveProduct = await productService.getFiveProduct();
 
   if (user) {
     const getCategoryId = await supportProductService.getLatestCategory();
@@ -409,7 +410,12 @@ productController.getFiveProduct = tryCatch(async (req, res) => {
       getCategoryId.product.categoryId
     );
 
-    const fiveProductMap = fiveProduct.map((el) => {
+    const fiveProductCombine =
+      fiveProduct.length <= 5
+        ? [...fiveProduct, ...initFiveProduct.slice(0, 5 - fiveProduct.length)]
+        : fiveProduct;
+
+    const fiveProductMap = fiveProductCombine.map((el) => {
       el.creatorName = `${el.creator.firstName} ${el.creator.lastName}`;
       el.profileImage = el.creator.profileImage;
       el.category = el.category.category;
@@ -419,14 +425,14 @@ productController.getFiveProduct = tryCatch(async (req, res) => {
 
     return res.status(200).json({ fiveProduct: fiveProductMap });
   } else {
-    const fiveProduct = await productService.getFiveProduct();
-    const fiveProductMap = fiveProduct.map((el) => {
+    const fiveProductMap = initFiveProduct.map((el) => {
       el.creatorName = `${el.creator.firstName} ${el.creator.lastName}`;
       el.profileImage = el.creator.profileImage;
       el.category = el.category.category;
       delete el.creator;
       return el;
     });
+
     res.status(200).json({ fiveProduct: fiveProductMap });
   }
 });

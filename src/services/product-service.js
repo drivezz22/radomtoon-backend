@@ -138,16 +138,32 @@ productService.getAllProject = () =>
     include: { supportProducts: { include: { tier: true } } },
   });
 
-productService.getAllSuccessProjectFilterByStartEndDate = (startDate, endDate) =>
+productService.getAllSuccessfulOrPendingProjectsBetweenDates = (startDate, endDate) =>
   prisma.product.findMany({
     where: {
-      productStatusId: PRODUCT_STATUS_ID.SUCCESS,
+      productStatusId: {
+        in: [PRODUCT_STATUS_ID.SUCCESS, PRODUCT_STATUS_ID.PENDING],
+      },
+      totalFund: { gte: 1 },
       deadline: {
         gte: startDate,
         lte: endDate,
       },
     },
-    include: { supportProducts: { include: { tier: true } } },
+    select: {
+      id: true,
+      categoryId: true,
+      category: {
+        select: {
+          category: true,
+        },
+      },
+      totalFund: true,
+      supportProducts: {
+        select: { tier: { select: { price: true } }, createdAt: true },
+        where: { deletedAt: null },
+      },
+    },
   });
 
 productService.getAllProjectFilterByStartEndDate = (startDate, endDate) =>

@@ -39,13 +39,6 @@ const checkMilestoneExistence = (existMilestone) => {
       statusCode: 400,
     });
   }
-
-  if (existMilestone.approvalStatusId === APPROVAL_STATUS_ID.FAILED) {
-    createError({
-      message: "Please update your milestone evidence and send it again",
-      statusCode: 400,
-    });
-  }
 };
 
 const checkUnfinishedMilestones = async (existMilestone) => {
@@ -75,6 +68,13 @@ milestoneController.updateMilestoneEvidence = async (req, res, next) => {
 
     checkMilestoneExistence(existMilestone);
     await checkUnfinishedMilestones(existMilestone);
+
+    if (existMilestone.approvalStatusId === APPROVAL_STATUS_ID.PENDING) {
+      createError({
+        message: "This milestone is not approved yet",
+        statusCode: 400,
+      });
+    }
 
     if (!existMilestone.evidenceImage && !req.file) {
       createError({
@@ -115,6 +115,14 @@ milestoneController.failApproval = tryCatch(async (req, res) => {
   const existMilestone = await milestoneService.getMilestoneById(+milestoneId);
 
   checkMilestoneExistence(existMilestone);
+
+  if (existMilestone.approvalStatusId === APPROVAL_STATUS_ID.FAILED) {
+    createError({
+      message: "Please update your milestone evidence and send it again",
+      statusCode: 400,
+    });
+  }
+
   await checkUnfinishedMilestones(existMilestone);
 
   await sendEmail(
@@ -137,6 +145,14 @@ milestoneController.passApproval = tryCatch(async (req, res) => {
   const { milestoneId } = req.params;
 
   const existMilestone = await milestoneService.getMilestoneById(+milestoneId);
+
+  if (existMilestone.approvalStatusId === APPROVAL_STATUS_ID.FAILED) {
+    createError({
+      message: "Please update your milestone evidence and send it again",
+      statusCode: 400,
+    });
+  }
+
   checkMilestoneExistence(existMilestone);
   await checkUnfinishedMilestones(existMilestone);
 

@@ -4,7 +4,14 @@ const prisma = require("../models/prisma");
 const supportProductService = {};
 
 supportProductService.createSupportProduct = (data) =>
-  prisma.supportProduct.create({ data });
+  prisma.supportProduct.create({
+    data,
+    include: {
+      product: { include: { productStatus: true } },
+      tier: { include: { tierRank: true } },
+      deliveryStatus: true,
+    },
+  });
 
 supportProductService.getSupportBySupporterIdAndProductId = (userId, productId) =>
   prisma.supportProduct.findFirst({
@@ -33,16 +40,46 @@ supportProductService.getSupportBySupporterId = (supporterId) =>
       tier: { include: { tierRank: true } },
       deliveryStatus: true,
     },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+
+supportProductService.getLatestCategory = (supporterId) =>
+  prisma.supportProduct.findFirst({
+    select: {
+      product: {
+        select: {
+          categoryId: true,
+        },
+      },
+    },
+    where: { userId: supporterId },
+    orderBy: {
+      createdAt: "desc",
+    },
   });
 
 supportProductService.getSupportByProductId = (productId) =>
   prisma.supportProduct.findMany({
-    where: { productId },
-    include: {
-      product: { include: { productStatus: true } },
-      tier: { include: { tierRank: true } },
+    where: { productId,deletedAt:null},
+    select: {
+      product: {
+        select: {
+          productStatus: true,
+          totalFund: true,
+          availableFund: true,
+          productMilestones: {
+            select: {
+              milestoneRankId: true,
+              approvalStatusId: true,
+            },
+          },
+        },
+      },
+      tier: { select: { tierRank: true, tierName: true } },
       deliveryStatus: true,
-      user: true,
+      user: { select: { id: true, firstName: true, lastName: true, profileImage: true } },
     },
   });
 

@@ -116,7 +116,20 @@ authController.creatorRegister = async (req, res, next) => {
 
 authController.getCreatorApproval = tryCatch(async (req, res) => {
   const existCreator = await creatorService.findAllCreatorPending();
-  res.status(200).json({ creatorApprovalList: existCreator });
+  const creatorMap = existCreator.map((creator) => {
+    const newCreatorData = {};
+    newCreatorData.id = creator.id;
+    newCreatorData.email = creator.email;
+    newCreatorData.firstName = creator.firstName;
+    newCreatorData.lastName = creator.lastName;
+    newCreatorData.address = creator.address;
+    newCreatorData.phone = creator.phone;
+    newCreatorData.provinceName = creator.province.name;
+    newCreatorData.identityImage = creator.identityImage;
+    return newCreatorData;
+  });
+
+  res.status(200).json({ pendingApprovalCreator: creatorMap });
 });
 
 authController.passApproval = tryCatch(async (req, res) => {

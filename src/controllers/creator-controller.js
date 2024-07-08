@@ -1,9 +1,11 @@
-const { IMAGE_DIR } = require("../constants");
+const dayjs = require("dayjs");
+const { IMAGE_DIR, PRODUCT_STATUS_ID, APPROVAL_STATUS_ID } = require("../constants");
 const creatorService = require("../services/creator-service");
 const uploadService = require("../services/upload-service");
 const createError = require("../utils/create-error");
 const tryCatch = require("../utils/try-catch-wrapper");
 const fs = require("fs-extra");
+const supportProductService = require("../services/support-product-service");
 
 const creatorController = {};
 
@@ -50,19 +52,62 @@ creatorController.updateProfile = async (req, res, next) => {
 
 creatorController.getCreator = tryCatch(async (req, res) => {
   const existCreatorList = await creatorService.findAllCreator();
+
   if (!existCreatorList.length) {
     return res.status(200).json({ creatorList: [] });
   }
-  const filterValueList = existCreatorList.map((el) => ({
-    id: el.id,
-    firstName: el.firstName,
-    lastName: el.lastName,
-    profileImage: el.profileImage,
-    biography: el.biography,
-    website: el.website,
-  }));
+
+  const filterValueList = existCreatorList.map((el) => {
+    const supportProducts = el.products
+      .map((product) => product.supportProducts)
+      .map((supporter) => {
+        const map = supporter.map((el) => el.userId);
+        return map;
+      });
+    const filterValue = new Set(supportProducts.flat(Infinity));
+    const filterValueSize = filterValue.size;
+    return {
+      id: el.id,
+      firstName: el.firstName,
+      lastName: el.lastName,
+      profileImage: el.profileImage,
+      biography: el.biography,
+      website: el.website,
+      productCount: el.products.length,
+      supporterCount: filterValueSize,
+      joinAt: dayjs(el.createdAt).format("MMM YYYY"),
+    };
+  });
 
   res.status(200).json({ creatorList: filterValueList });
+});
+
+creatorController.getDeliveryStatus = tryCatch(async (req, res) => {
+  const { productId } = req.params;
+  const deliveryStatus = await supportProductService.getSupportByProductId(+productId);
+  const deliveryStatusMap = deliveryStatus.map((el) => {
+    const approvalStatusObj = {};
+    el.product.productMilestones.forEach((element) => {
+      approvalStatusObj[element.milestoneRankId] = element.approvalStatusId;
+    });
+    const data = {};
+    const deliveryStatus =
+      el.product.productStatus.id !== PRODUCT_STATUS_ID.SUCCESS &&
+      approvalStatusObj[1] !== APPROVAL_STATUS_ID.SUCCESS ||
+      approvalStatusObj[2] !== APPROVAL_STATUS_ID.SUCCESS
+        ? "NOT AVAILABLE"
+        : el.deliveryStatus.status;
+    data.productStatusId = el.product.productStatus.id;
+    data.productMilestones = el.productMilestones;
+    data.tierName = el.tier.tierName;
+    data.deliveryStatus = deliveryStatus;
+    data.supporterFirstName = el.user.firstName;
+    data.supporterLastName = el.user.lastName;
+    data.supporterId = el.user.id;
+    return data;
+  });
+
+  res.status(200).json({ deliveryList: deliveryStatusMap });
 });
 
 module.exports = creatorController;

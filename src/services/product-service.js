@@ -132,16 +132,38 @@ productService.getAllSuccessProject = () =>
     include: { supportProducts: { include: { tier: true } } },
   });
 
-productService.getAllSuccessProjectFilterByStartEndDate = (startDate, endDate) =>
+productService.getAllProject = () =>
+  prisma.product.findMany({
+    where: { approvalStatusId: APPROVAL_STATUS_ID.SUCCESS },
+    include: { supportProducts: { include: { tier: true } } },
+  });
+
+productService.getAllSuccessfulOrPendingProjectsBetweenDates = (startDate, endDate) =>
   prisma.product.findMany({
     where: {
-      productStatusId: PRODUCT_STATUS_ID.SUCCESS,
+      productStatusId: {
+        in: [PRODUCT_STATUS_ID.SUCCESS, PRODUCT_STATUS_ID.PENDING],
+      },
+      totalFund: { gte: 1 },
       deadline: {
         gte: startDate,
         lte: endDate,
       },
     },
-    include: { supportProducts: { include: { tier: true } } },
+    select: {
+      id: true,
+      categoryId: true,
+      category: {
+        select: {
+          category: true,
+        },
+      },
+      totalFund: true,
+      supportProducts: {
+        select: { tier: { select: { price: true } }, createdAt: true },
+        where: { deletedAt: null },
+      },
+    },
   });
 
 productService.getAllProjectFilterByStartEndDate = (startDate, endDate) =>
@@ -168,4 +190,63 @@ productService.updateApprovePending = (productId) =>
     data: { approvalStatusId: APPROVAL_STATUS_ID.PENDING },
   });
 
+productService.getFiveProductByCategory = (categoryId) =>
+  prisma.product.findMany({
+    select: {
+      id: true,
+      productName: true,
+      totalFund: true,
+      deadline: true,
+      approvalStatusId: true,
+      productStatusId: true,
+      productImage: true,
+      creator: {
+        select: {
+          firstName: true,
+          lastName: true,
+          profileImage: true,
+        },
+      },
+      summaryDetail: true,
+      goal: true,
+      category: {
+        select: {
+          category: true,
+        },
+      },
+    },
+    where: { categoryId, productStatusId: PRODUCT_STATUS_ID.PENDING },
+    orderBy: [{ totalFund: "desc" }, { createdAt: "desc" }],
+    take: 5,
+  });
+
+productService.getFiveProduct = () =>
+  prisma.product.findMany({
+    select: {
+      id: true,
+      productName: true,
+      totalFund: true,
+      deadline: true,
+      approvalStatusId: true,
+      productStatusId: true,
+      productImage: true,
+      creator: {
+        select: {
+          firstName: true,
+          lastName: true,
+          profileImage: true,
+        },
+      },
+      summaryDetail: true,
+      goal: true,
+      category: {
+        select: {
+          category: true,
+        },
+      },
+    },
+    where: { productStatusId: PRODUCT_STATUS_ID.PENDING },
+    orderBy: [{ totalFund: "desc" }, { createdAt: "desc" }],
+    take: 5,
+  });
 module.exports = productService;

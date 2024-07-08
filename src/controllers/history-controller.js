@@ -1,3 +1,4 @@
+const { PRODUCT_STATUS_ID, CATEGORIES_TYPE_NAME } = require("../constants");
 const supportProductService = require("../services/support-product-service");
 const tryCatch = require("../utils/try-catch-wrapper");
 
@@ -8,12 +9,22 @@ historyController.getHistoryBySupporterId = tryCatch(async (req, res) => {
     +req.user.id
   );
   const mapHistories = supporterHistory.map((el) => {
+    const deliveryStatus =
+      el.product.productStatus.id === PRODUCT_STATUS_ID.SUCCESS
+        ? el.deliveryStatus.status
+        : "NOT AVAILABLE";
+    const fundingStatus = el.deletedAt ? "CANCELED" : el.product.productStatus.status;
     const histories = {
+      productId: el.product.id,
       projectName: el.product.productName,
-      tier: el.tier.tierRank.tier,
-      spendMoney: el.tier.price,
-      fundingStatus: el.product.productStatus.status,
-      deliveryStatus: el.deliveryStatus.status,
+      projectImage: el.product.productImage,
+      projectCategory: CATEGORIES_TYPE_NAME[el.product.categoryId],
+      tierId: el.tierId,
+      tierName: el.tier.tierName,
+      price: el.tier.price,
+      date: el.createdAt,
+      fundingStatus,
+      deliveryStatus,
     };
     return histories;
   });

@@ -4,6 +4,7 @@ const {
   TIER_RANK_ID,
   MIN_DEADLINE_DAYS,
   IMAGE_DIR,
+  USER_ROLE,
 } = require("../constants");
 const milestoneService = require("../services/milestone-service");
 const productService = require("../services/product-service");
@@ -15,6 +16,9 @@ const { projectReject } = require("../utils/mail-content/project-reject");
 const { projectApprove } = require("../utils/mail-content/project-approve");
 const uploadService = require("../services/upload-service");
 const fs = require("fs-extra");
+const userService = require("../services/user-service");
+const jwtService = require("../services/jwt-service");
+const supportProductService = require("../services/support-product-service");
 
 const productController = {};
 
@@ -256,7 +260,7 @@ productController.getAllProductByCreatorId = tryCatch(async (req, res) => {
   const allProduct = await productService.getAllProductByCreatorId(req.user.id);
   const dropCreatorAllProduct = allProduct.map((el) => {
     el.creatorName = `${el.creator.firstName} ${el.creator.lastName}`;
-    el.creatorProfileImage = el.profileImage;
+    el.creatorProfileImage = el.creator.profileImage;
     el.supporterCount = el.supportProducts.length;
     delete el.creator;
     delete el.supportProducts;
@@ -378,7 +382,53 @@ productController.passApproval = tryCatch(async (req, res) => {
 
 productController.getPendingApprovalProduct = tryCatch(async (req, res) => {
   const pendingApprovalProduct = await productService.getPendingApprovalProduct();
-  res.status(200).json({ pendingApprovalProduct });
+  res.status(200).json({
+    pendingApprovalProduct: pendingApprovalProduct.map((product) => ({
+      id: product.id,
+      productName: product.productName,
+    })),
+  });
+});
+
+productController.getFiveProduct = tryCatch(async (req, res) => {
+  const authorization = req.headers.authorization;
+  console.log("authorization", authorization);
+  let user;
+  if (authorization) {
+    const accessToken = authorization.split(" ")[1];
+    const payload = jwtService.verify(accessToken);
+
+    if (payload.role === USER_ROLE.SUPPORTER) {
+      user = await userService.findUserById(payload.id);
+    }
+  }
+
+  if (user) {
+    const getCategoryId = await supportProductService.getLatestCategory();
+    const fiveProduct = await productService.getFiveProductByCategory(
+      getCategoryId.product.categoryId
+    );
+
+    const fiveProductMap = fiveProduct.map((el) => {
+      el.creatorName = `${el.creator.firstName} ${el.creator.lastName}`;
+      el.profileImage = el.creator.profileImage;
+      el.category = el.category.category;
+      delete el.creator;
+      return el;
+    });
+
+    return res.status(200).json({ fiveProduct: fiveProductMap });
+  } else {
+    const fiveProduct = await productService.getFiveProduct();
+    const fiveProductMap = fiveProduct.map((el) => {
+      el.creatorName = `${el.creator.firstName} ${el.creator.lastName}`;
+      el.profileImage = el.creator.profileImage;
+      el.category = el.category.category;
+      delete el.creator;
+      return el;
+    });
+    res.status(200).json({ fiveProduct: fiveProductMap });
+  }
 });
 
 module.exports = productController;

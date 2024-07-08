@@ -140,16 +140,14 @@ commentController.deleteComment = tryCatch(async (req, res) => {
 });
 
 commentController.getComment = tryCatch(async (req, res) => {
-  const { productId } = req.params;
-
-  const commentResultList = await commentService.getCommentByProductId(+productId);
+  const commentResultList = await commentService.getAllComment();
   const commentResultMap = commentResultList.map((el) => {
     const commentData = {};
     commentData.id = el.id;
     commentData.userId = el.userId;
     commentData.comment = el.comment;
     commentData.productId = el.productId;
-    commentData.time = el.updatedAt;
+    commentData.time = el.createdAt;
     commentData.creatorId = el.product.creatorId;
     commentData.creatorFirstName = el.product.creator.firstName;
     commentData.creatorLastName = el.product.creator.lastName;
@@ -161,6 +159,7 @@ commentController.getComment = tryCatch(async (req, res) => {
     }
     return commentData;
   });
+
   res.status(200).json({ commentList: commentResultMap });
 });
 

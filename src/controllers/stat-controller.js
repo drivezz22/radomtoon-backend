@@ -10,13 +10,14 @@ const axios = require('axios');
 const statController = {};
 
 const getCommonStats = async () => {
-  const successProjects = await productService.getAllSuccessProject();
+  const successProjects = await productService.getAllProject();
   const supportProjects = await supportProductService.getSupport();
+  const supportProductFilter = supportProjects.filter((el) => el.deletedAt === null);
 
   return {
     totalProjectCount: successProjects.length,
     totalFunding: successProjects.reduce((acc, { totalFund }) => acc + totalFund, 0),
-    totalContributions: supportProjects.length,
+    totalContributions: supportProductFilter.length,
   };
 };
 
@@ -26,15 +27,17 @@ const getDateRange = (year) => ({
 });
 
 const getFilteredProductsByMonth = async (startDate, endDate) => {
-  const allProducts = await productService.getAllSuccessProjectFilterByStartEndDate(
+  const allProducts = await productService.getAllSuccessfulOrPendingProjectsBetweenDates(
     startDate,
     endDate
   );
   return allProducts.map((el) => ({
-    productName: el.productName,
+    productId: el.id,
+    categoryId: el.categoryId,
+    category: el.category.category,
     totalFund: el.totalFund,
-    totalSupporter: el.supportProducts.length,
-    month: dayjs(el.deadline).format("MMM"),
+    supportProduct: el.supportProducts,
+    month: dayjs(el.createdAt).format("MMM"),
   }));
 };
 
@@ -48,8 +51,6 @@ const getCumulativeFundsByMonth = (allSupportProducts, filterMonth) => {
     return { label: month, fund: cumulativeFund };
   });
 };
-
-const compareDesc = (key) => (a, b) => b[key] - a[key];
 
 const getUniqueSupporters = (allSupportProduct) => {
   const uniqueSupporterSet = new Set();
@@ -120,11 +121,12 @@ statController.getStatByProduct = tryCatch(async (req, res) => {
 
 statController.getStat = tryCatch(async (req, res) => {
   const { totalProjectCount, totalFunding, totalContributions } = await getCommonStats();
-
+  const totalFundString = String(totalFunding);
+  const estimatedFunding = +totalFundString[0] * 10 ** (totalFundString.length - 1);
   res.status(200).json({
     stat: {
       projectSupport: totalProjectCount,
-      towardIdea: totalFunding,
+      towardIdea: estimatedFunding,
       contribution: totalContributions,
     },
   });
@@ -135,13 +137,20 @@ statController.getTopFiveCategories = tryCatch(async (req, res) => {
   const products = await getFilteredProductsByMonth(startDate, endDate);
 
   const productDataAllMonth = MONTH_NAME_MAP.map((month) => {
-    const filteredProducts = products.filter((el) => el.month === month);
-    const topFiveByTotalFund = [...filteredProducts]
-      .sort(compareDesc("totalFund"))
-      .slice(0, 5);
-    const topFiveByTotalSupporter = [...filteredProducts]
-      .sort(compareDesc("totalSupporter"))
-      .slice(0, 5);
+    const topFiveByTotalFund = {};
+    const topFiveByTotalSupporter = {};
+    products
+      .filter((el) => el.month === month)
+      .forEach((product) => {
+        if (!topFiveByTotalFund[product.category]) {
+          topFiveByTotalFund[product.category] = 0;
+        }
+        if (!topFiveByTotalSupporter[product.category]) {
+          topFiveByTotalSupporter[product.category] = 0;
+        }
+        topFiveByTotalFund[product.category] += product.totalFund;
+        topFiveByTotalSupporter[product.category] += product.supportProduct.length;
+      });
 
     return { month, topFiveByTotalFund, topFiveByTotalSupporter };
   });

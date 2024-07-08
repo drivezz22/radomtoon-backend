@@ -72,6 +72,19 @@ exports.CATEGORIES_TYPE_ID = {
   TECHNOLOGY: 10,
 };
 
+exports.CATEGORIES_TYPE_NAME = {
+  1: "ART",
+  2: "COMICS",
+  3: "CRAFTS",
+  4: "DANCE",
+  5: "DESIGN",
+  6: "FASHION",
+  7: "FILM",
+  8: "GAMES",
+  9: "MUSIC",
+  10: "TECHNOLOGY",
+};
+
 exports.MIN_DEADLINE_DAYS = 15;
 
 exports.DELIVERY_STATUS_ID = {

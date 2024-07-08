@@ -14,6 +14,7 @@ const authenticate = tryCatch(async (req, res, next) => {
 
   const accessToken = authorization.split(" ")[1];
   const payload = jwtService.verify(accessToken);
+
   let user;
 
   if (payload.role === USER_ROLE.SUPPORTER) {
@@ -27,9 +28,12 @@ const authenticate = tryCatch(async (req, res, next) => {
   if (!user) {
     createError({ message: "The user was not found", statusCode: 400 });
   }
+
   delete user.password;
   user.role = payload.role;
+
   req.user = user;
+
   next();
 });
 

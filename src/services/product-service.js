@@ -35,7 +35,8 @@ productService.findProductById = (productId) =>
     },
   });
 
-productService.deleteProductById = (id) => prisma.product.deleteMany({ where: { id } });
+productService.deleteProductById = (id) =>
+  prisma.product.deleteMany({ where: { id } });
 
 productService.updateProductById = (id, data) =>
   prisma.product.update({
@@ -75,7 +76,9 @@ productService.getAllProductByCreatorId = (creatorId) =>
 productService.getAllProductForAdmin = () =>
   prisma.product.findMany({
     where: {
-      approvalStatusId: { in: [APPROVAL_STATUS_ID.FAILED, APPROVAL_STATUS_ID.SUCCESS] },
+      approvalStatusId: {
+        in: [APPROVAL_STATUS_ID.FAILED, APPROVAL_STATUS_ID.SUCCESS],
+      },
     },
     include: { webProfits: true },
   });
@@ -138,7 +141,10 @@ productService.getAllProject = () =>
     include: { supportProducts: { include: { tier: true } } },
   });
 
-productService.getAllSuccessfulOrPendingProjectsBetweenDates = (startDate, endDate) =>
+productService.getAllSuccessfulOrPendingProjectsBetweenDates = (
+  startDate,
+  endDate
+) =>
   prisma.product.findMany({
     where: {
       productStatusId: {
@@ -203,6 +209,7 @@ productService.getFiveProductByCategory = (categoryId) =>
       approvalStatusId: true,
       productStatusId: true,
       productImage: true,
+      creatorId: true,
       creator: {
         select: {
           firstName: true,

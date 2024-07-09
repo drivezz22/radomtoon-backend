@@ -210,24 +210,32 @@ statController.getTotalFundTrend = tryCatch(async (req, res) => {
     filterMonth
   );
 
-  const autoarima = new ARIMA({ auto: true, verbose: false }).fit(
-    cumulativeFundAllMonth.map((el) => el.fund)
+  const autoarima = new ARIMA({ p: 2, d: 1, q: 2, verbose: false }).train(
+    mapSupportProduct.map((el) => el.fund)
   );
+
   const [pred, errors] = autoarima.predict(3);
 
-  cumulativeFundAllMonth[findIndexMonth].forecast =
-    cumulativeFundAllMonth[findIndexMonth].fund;
+  const lastFund = cumulativeFundAllMonth[findIndexMonth].fund;
+  cumulativeFundAllMonth[findIndexMonth].forecast = lastFund;
 
   for (let i = 0; i < 3; i++) {
     const monthIndex = findIndexMonth + i + 1;
     if (monthIndex < MONTH_NAME_MAP.length) {
       const month = MONTH_NAME_MAP[monthIndex];
       if (!cumulativeFundAllMonth.find((el) => el.label === month)) {
-        const value = pred > 0 ? Math.round(pred[i]) : 0;
-        cumulativeFundAllMonth.push({
-          label: month,
-          forecast: value,
-        });
+        const value = pred[i] > 0 ? Math.round(pred[i]) : 0;
+        if (monthIndex - 1 >= 0) {
+          cumulativeFundAllMonth.push({
+            label: month,
+            forecast: cumulativeFundAllMonth[monthIndex - 1].forecast + value,
+          });
+        } else {
+          cumulativeFundAllMonth.push({
+            label: month,
+            forecast: value,
+          });
+        }
       }
     }
   }
@@ -389,33 +397,37 @@ statController.getProductFundTrend = tryCatch(async (req, res) => {
     fund: el.tier.price,
   }));
 
-  let cumulativeFund = 0;
-  const cumulativeFundAllMonth = filterMonth.map((month) => {
-    const totalFundMonth = mapSupportProduct
-      .filter((el) => el.month === month)
-      .reduce((acc, item) => acc + item.fund, 0);
-    cumulativeFund += totalFundMonth;
-    return { label: month, fund: cumulativeFund };
-  });
-
-  const autoarima = new ARIMA({ auto: true, verbose: false }).fit(
-    cumulativeFundAllMonth.map((el) => el.fund)
+  const cumulativeFundAllMonth = getCumulativeFundsByMonth(
+    mapSupportProduct,
+    filterMonth
   );
+
+  const autoarima = new ARIMA({ p: 2, d: 1, q: 2, verbose: false }).train(
+    mapSupportProduct.map((el) => el.fund)
+  );
+
   const [pred, errors] = autoarima.predict(3);
 
-  cumulativeFundAllMonth[findIndexMonth].forecast =
-    cumulativeFundAllMonth[findIndexMonth].fund;
+  const lastFund = cumulativeFundAllMonth[findIndexMonth].fund;
+  cumulativeFundAllMonth[findIndexMonth].forecast = lastFund;
 
   for (let i = 0; i < 3; i++) {
     const monthIndex = findIndexMonth + i + 1;
     if (monthIndex < MONTH_NAME_MAP.length) {
       const month = MONTH_NAME_MAP[monthIndex];
       if (!cumulativeFundAllMonth.find((el) => el.label === month)) {
-        const value = pred > 0 ? Math.round(pred[i]) : 0;
-        cumulativeFundAllMonth.push({
-          label: month,
-          forecast: value,
-        });
+        const value = pred[i] > 0 ? Math.round(pred[i]) : 0;
+        if (monthIndex - 1 >= 0) {
+          cumulativeFundAllMonth.push({
+            label: month,
+            forecast: cumulativeFundAllMonth[monthIndex - 1].forecast + value,
+          });
+        } else {
+          cumulativeFundAllMonth.push({
+            label: month,
+            forecast: value,
+          });
+        }
       }
     }
   }

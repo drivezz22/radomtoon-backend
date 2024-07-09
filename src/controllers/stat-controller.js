@@ -6,6 +6,7 @@ const tryCatch = require("../utils/try-catch-wrapper");
 const dayjs = require("dayjs");
 const { MONTH_NAME_MAP, PRODUCT_STATUS_ID } = require("../constants");
 const axios = require("axios");
+const ARIMA = require("arima");
 
 const statController = {};
 
@@ -179,6 +180,27 @@ statController.getTotalFundTrend = tryCatch(async (req, res) => {
     mapSupportProduct,
     filterMonth
   );
+
+  const autoarima = new ARIMA({ auto: true, verbose: false }).fit(
+    cumulativeFundAllMonth.map((el) => el.fund)
+  );
+  const [pred, errors] = autoarima.predict(3);
+
+  cumulativeFundAllMonth[findIndexMonth].forecast =
+    cumulativeFundAllMonth[findIndexMonth].fund;
+
+  for (let i = 0; i < 3; i++) {
+    const monthIndex = findIndexMonth + i + 1;
+    if (monthIndex < MONTH_NAME_MAP.length) {
+      const month = MONTH_NAME_MAP[monthIndex];
+      if (!cumulativeFundAllMonth.find((el) => el.label === month)) {
+        cumulativeFundAllMonth.push({
+          label: month,
+          forecast: Math.round(pred[i]),
+        });
+      }
+    }
+  }
 
   res.status(200).json({ cumulativeFundAllMonth });
 });

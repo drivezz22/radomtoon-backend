@@ -1,4 +1,4 @@
-const { IMAGE_DIR, IS_CREATOR_ACCEPT_STATUS, USER_ROLE } = require("../constants");
+const { IS_CREATOR_ACCEPT_STATUS, USER_ROLE } = require("../constants");
 const creatorService = require("../services/creator-service");
 const hashService = require("../services/hash-service");
 const jwtService = require("../services/jwt-service");
@@ -67,12 +67,12 @@ const handleApproval = async (req, res, status) => {
   }
 
   if (status === "approve") {
-    await sendEmail(existCreator.email, "Creator Registration Successful", emailApproval);
     await creatorService.approveCreatorById(+creatorId);
+    await sendEmail(existCreator.email, "Creator Registration Successful", emailApproval);
     res.status(200).json({ message: "This creator is approved" });
   } else if (status === "reject") {
-    await sendEmail(existCreator.email, "Creator Registration Unsuccessful", emailReject);
     await creatorService.rejectCreatorById(+creatorId);
+    await sendEmail(existCreator.email, "Creator Registration Unsuccessful", emailReject);
     res.status(200).json({ message: "This creator is rejected" });
   }
 };
@@ -82,8 +82,8 @@ authController.supporterRegister = tryCatch(async (req, res, next) => {
   await checkUserExistence(data?.email, data?.phone);
 
   data.password = await hashService.hash(data.password);
-  await sendEmail(data?.email, "Supporter Registration Successful", supportRegisterMail);
   await userService.createUser(data);
+  await sendEmail(data?.email, "Supporter Registration Successful", supportRegisterMail);
   res.status(201).json({ message: "User is created" });
 });
 
@@ -110,7 +110,7 @@ authController.creatorRegister = async (req, res, next) => {
   } catch (err) {
     next(err);
   } finally {
-    fs.emptyDirSync(IMAGE_DIR);
+    await fs.remove(req.file.path);
   }
 };
 
@@ -227,7 +227,7 @@ authController.updateProfile = async (req, res, next) => {
   } catch (err) {
     next(err);
   } finally {
-    fs.emptyDirSync(IMAGE_DIR);
+    await fs.remove(req.file.path);
   }
 };
 

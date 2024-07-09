@@ -1,7 +1,6 @@
 const {
   PRODUCT_STATUS_ID,
   APPROVAL_STATUS_ID,
-  IMAGE_DIR,
   MILESTONE_PERCENT_PAYMENT,
   WEBSITE_PERCENT_PROFIT,
 } = require("../constants");
@@ -104,7 +103,7 @@ milestoneController.updateMilestoneEvidence = async (req, res, next) => {
   } catch (err) {
     next(err);
   } finally {
-    fs.emptyDirSync(IMAGE_DIR);
+    await fs.remove(req.file.path);
   }
 };
 
@@ -125,13 +124,13 @@ milestoneController.failApproval = tryCatch(async (req, res) => {
 
   await checkUnfinishedMilestones(existMilestone);
 
+  await milestoneService.failApproval(+milestoneId);
+
   await sendEmail(
     existMilestone.product.creator.email,
     `Milestone ${existMilestone.milestoneRankId} Rejected`,
     milestoneReject(existMilestone.milestoneRankId, comment)
   );
-
-  await milestoneService.failApproval(+milestoneId);
 
   res.status(200).json({ message: "fail approval in this milestone" });
 });
@@ -156,12 +155,6 @@ milestoneController.passApproval = tryCatch(async (req, res) => {
   checkMilestoneExistence(existMilestone);
   await checkUnfinishedMilestones(existMilestone);
 
-  await sendEmail(
-    existMilestone.product.creator.email,
-    `Milestone ${existMilestone.milestoneRankId} Approved`,
-    milestoneApproval(existMilestone.milestoneRankId)
-  );
-
   const MilestonePercent = MILESTONE_PERCENT_PAYMENT[existMilestone.milestoneRankId];
   const totalFund = existMilestone.product.totalFund * (1 - MilestonePercent);
   const availableFund = totalFund * (1 - WEBSITE_PERCENT_PROFIT);
@@ -182,6 +175,12 @@ milestoneController.passApproval = tryCatch(async (req, res) => {
   }
 
   await milestoneService.passApproval(+milestoneId);
+
+  await sendEmail(
+    existMilestone.product.creator.email,
+    `Milestone ${existMilestone.milestoneRankId} Approved`,
+    milestoneApproval(existMilestone.milestoneRankId)
+  );
 
   res.status(200).json({ message: "pass approval in this milestone" });
 });

@@ -2,6 +2,7 @@ require("dotenv").config();
 const morgan = require("morgan");
 const express = require("express");
 const cors = require("cors");
+const { ToadScheduler } = require("toad-scheduler");
 const notFoundMiddleware = require("./src/middlewares/not-found");
 const errorMiddleware = require("./src/middlewares/error");
 const authRouter = require("./src/routes/auth-route");
@@ -14,13 +15,12 @@ const creatorAuthenticate = require("./src/middlewares/creator-authenticate");
 const commentRouter = require("./src/routes/comment-route");
 const milestoneRouter = require("./src/routes/milestone-route");
 const supportProductRouter = require("./src/routes/support-product-route");
-const { nodeCron } = require("./src/utils/cron-job");
-const { checkDeadline } = require("./src/utils/check-deadline-scheduler");
 const historyRouter = require("./src/routes/history-route");
 const statRouter = require("./src/routes/stat-route");
 const stripeRouter = require("./src/routes/stripe-route");
 const tierRouter = require("./src/routes/tier-route");
 const { IMAGE_DIR } = require("./src/constants");
+const { checkDeadlineJob } = require("./src/utils/toad-job");
 const app = express();
 
 app.use(cors());
@@ -41,10 +41,13 @@ app.use("/support-products", authenticate, supportProductRouter);
 app.use("/histories", authenticate, historyRouter);
 app.use("/stats", statRouter);
 
-// nodeCron("*/10 * * * *", checkDeadline);
+const scheduler = new ToadScheduler();
+scheduler.addSimpleIntervalJob(checkDeadlineJob);
 
 app.use(notFoundMiddleware);
 app.use(errorMiddleware);
 
 const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => console.log(`Server is running on port : ${PORT}`));
+
+scheduler.stop();

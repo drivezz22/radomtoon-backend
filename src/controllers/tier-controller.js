@@ -1,4 +1,4 @@
-const { APPROVAL_STATUS_ID, IMAGE_DIR } = require("../constants");
+const { APPROVAL_STATUS_ID } = require("../constants");
 const productService = require("../services/product-service");
 const tierService = require("../services/tier-service");
 const uploadService = require("../services/upload-service");
@@ -67,7 +67,7 @@ tierController.createTier = async (req, res, next) => {
   } catch (err) {
     next(err);
   } finally {
-    fs.emptyDirSync(IMAGE_DIR);
+    await fs.remove(req.file.path);
   }
 };
 
@@ -121,7 +121,7 @@ tierController.updateTier = async (req, res, next) => {
   } catch (err) {
     next(err);
   } finally {
-    fs.emptyDirSync(IMAGE_DIR);
+    await fs.remove(req.file.path);
   }
 };
 

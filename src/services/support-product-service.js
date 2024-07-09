@@ -51,6 +51,8 @@ supportProductService.getLatestCategory = (supporterId) =>
       product: {
         select: {
           categoryId: true,
+          id: true,
+          creatorId: true,
         },
       },
     },

@@ -7,8 +7,6 @@ const { projectFundPass } = require("./mail-content/project-fund-pass");
 
 module.exports.checkDeadline = async () => {
   try {
-    console.log("Checking for products over deadline...");
-
     const pendingProducts = await productService.getPendingProduct();
     const today = dayjs();
 
@@ -31,9 +29,7 @@ module.exports.checkDeadline = async () => {
         );
         const emailList = supporterList.map((el) => el.user.email);
         await sendEmail("_", "Project Success Funding", projectFundPass, emailList);
-
         await productService.updateSuccessOverDeadline(passedProductIds);
-        console.log("Updated passed products");
       }
 
       if (failedProductIds.length > 0) {
@@ -48,7 +44,6 @@ module.exports.checkDeadline = async () => {
           emailList
         );
         await productService.updateFailedOverDeadline(failedProductIds);
-        console.log("Updated failed products");
       }
     }
   } catch (err) {

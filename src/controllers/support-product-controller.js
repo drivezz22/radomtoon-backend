@@ -61,8 +61,6 @@ supportProductController.createSupportProduct = tryCatch(async (req, res) => {
 
   const totalFund = existTier.price + existTier.product.totalFund;
 
-  await sendEmail(existUser.email, "Support Confirmation", supportProject);
-
   await productService.updateFund(existTier.productId, totalFund);
   const supportResult = await supportProductService.createSupportProduct(
     supportProductData
@@ -87,6 +85,7 @@ supportProductController.createSupportProduct = tryCatch(async (req, res) => {
     fundingStatus,
     deliveryStatus,
   };
+  await sendEmail(existUser.email, "Support Confirmation", supportProject);
 
   res
     .status(201)
@@ -175,8 +174,8 @@ supportProductController.updateDelivery = tryCatch(async (req, res) => {
       statusCode: 400,
     });
   }
-  await sendEmail(existSupport.user.email, "Delivery", deliveryMail);
   await supportProductService.updateDeliveryById(existSupport.id);
+  await sendEmail(existSupport.user.email, "Delivery", deliveryMail);
 
   res.status(200).json({ message: "This product has been sent to the supporter" });
 });

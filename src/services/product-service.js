@@ -223,13 +223,14 @@ productService.getFiveProductByCategory = (categoryId) =>
     take: 5,
   });
 
-productService.getFiveProduct = () =>
+productService.getTenProduct = () =>
   prisma.product.findMany({
     select: {
       id: true,
       productName: true,
       totalFund: true,
       deadline: true,
+      creatorId: true,
       approvalStatusId: true,
       productStatusId: true,
       productImage: true,
@@ -250,6 +251,6 @@ productService.getFiveProduct = () =>
     },
     where: { productStatusId: PRODUCT_STATUS_ID.PENDING },
     orderBy: [{ totalFund: "desc" }, { createdAt: "desc" }],
-    take: 5,
+    take: 10,
   });
 module.exports = productService;

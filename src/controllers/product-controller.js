@@ -3,7 +3,6 @@ const {
   APPROVAL_STATUS_ID,
   TIER_RANK_ID,
   MIN_DEADLINE_DAYS,
-  IMAGE_DIR,
   USER_ROLE,
 } = require("../constants");
 const milestoneService = require("../services/milestone-service");
@@ -85,7 +84,7 @@ productController.createProduct = async (req, res, next) => {
   } catch (err) {
     next(err);
   } finally {
-    fs.emptyDirSync(IMAGE_DIR);
+    await fs.remove(req.file.path);
   }
 };
 
@@ -210,7 +209,7 @@ productController.updateProduct = async (req, res, next) => {
   } catch (err) {
     next(err);
   } finally {
-    fs.emptyDirSync(IMAGE_DIR);
+    await fs.remove(req.file.path);
   }
 };
 
@@ -352,8 +351,8 @@ productController.failApproval = tryCatch(async (req, res) => {
       statusCode: 400,
     });
   }
-  await sendEmail(existProduct.creator.email, "Project Rejected", projectReject(comment));
   await productService.failApproval(+productId);
+  await sendEmail(existProduct.creator.email, "Project Rejected", projectReject(comment));
   res.status(200).json({ message: "Approval failure updated" });
 });
 
@@ -375,8 +374,8 @@ productController.passApproval = tryCatch(async (req, res) => {
     });
   }
 
-  await sendEmail(existProduct.creator.email, "Project Approved", projectApprove);
   await productService.passApproval(+productId);
+  await sendEmail(existProduct.creator.email, "Project Approved", projectApprove);
   res.status(200).json({ message: "Approval success updated" });
 });
 
@@ -402,17 +401,31 @@ productController.getFiveProduct = tryCatch(async (req, res) => {
       user = await userService.findUserById(payload.id);
     }
   }
-  const initFiveProduct = await productService.getFiveProduct();
+  const initTenProduct = await productService.getTenProduct();
 
   if (user) {
-    const getCategoryId = await supportProductService.getLatestCategory();
+    const getLastProduct = await supportProductService.getLatestCategory();
     const fiveProduct = await productService.getFiveProductByCategory(
-      getCategoryId.product.categoryId
+      getLastProduct.product.categoryId
+    );
+
+    const fiveProductFilter = fiveProduct.filter(
+      (el) => el.id !== getLastProduct.product.id
+    );
+
+    const filterInitTenProduct = initTenProduct.filter(
+      (el) =>
+        ![...fiveProductFilter.map((el) => el.id), getLastProduct.product.id].includes(
+          el.id
+        )
     );
 
     const fiveProductCombine =
-      fiveProduct.length <= 5
-        ? [...fiveProduct, ...initFiveProduct.slice(0, 5 - fiveProduct.length)]
+      fiveProductFilter.length <= 5
+        ? [
+            ...fiveProductFilter,
+            ...filterInitTenProduct.slice(0, 5 - fiveProductFilter.length),
+          ]
         : fiveProduct;
 
     const fiveProductMap = fiveProductCombine.map((el) => {
@@ -425,7 +438,7 @@ productController.getFiveProduct = tryCatch(async (req, res) => {
 
     return res.status(200).json({ fiveProduct: fiveProductMap });
   } else {
-    const fiveProductMap = initFiveProduct.map((el) => {
+    const fiveProductMap = initTenProduct.slice(0, 5).map((el) => {
       el.creatorName = `${el.creator.firstName} ${el.creator.lastName}`;
       el.profileImage = el.creator.profileImage;
       el.category = el.category.category;

@@ -22,6 +22,25 @@ const getCommonStats = async () => {
   };
 };
 
+function getFullMonthName(shortMonth) {
+  const monthAbbreviations = {
+    Jan: "January",
+    Feb: "February",
+    Mar: "March",
+    Apr: "April",
+    May: "May",
+    Jun: "June",
+    Jul: "July",
+    Aug: "August",
+    Sep: "September",
+    Oct: "October",
+    Nov: "November",
+    Dec: "December",
+  };
+
+  return monthAbbreviations[shortMonth] || "Invalid month abbreviation";
+}
+
 const getDateRange = (year) => ({
   startDate: new Date(`${year}-01-01`),
   endDate: new Date(`${year}-12-31`),
@@ -138,25 +157,35 @@ statController.getTopFiveCategories = tryCatch(async (req, res) => {
   const products = await getFilteredProductsByMonth(startDate, endDate);
 
   const productDataAllMonth = MONTH_NAME_MAP.map((month) => {
-    const topFiveByTotalFund = {};
-    const topFiveByTotalSupporter = {};
+    const topFiveByTotalFund = [];
+    const topFiveByTotalSupporter = [];
     products
       .filter((el) => el.month === month)
       .forEach((product) => {
-        if (!topFiveByTotalFund[product.category]) {
-          topFiveByTotalFund[product.category] = 0;
-        }
-        if (!topFiveByTotalSupporter[product.category]) {
-          topFiveByTotalSupporter[product.category] = 0;
-        }
-        topFiveByTotalFund[product.category] += product.totalFund;
-        topFiveByTotalSupporter[product.category] += product.supportProduct.length;
-      });
+        const fundData = {};
+        const supporterData = {};
 
-    return { month, topFiveByTotalFund, topFiveByTotalSupporter };
+        if (!fundData[product.category]) {
+          fundData["label"] = product.category;
+          fundData["value"] = 0;
+        }
+        if (!supporterData[product.category]) {
+          supporterData["label"] = product.category;
+          supporterData["value"] = 0;
+        }
+        fundData["value"] += product.totalFund;
+        supporterData["value"] += product.supportProduct.length;
+        topFiveByTotalFund.push(fundData);
+        topFiveByTotalSupporter.push(supporterData);
+      });
+    return {
+      month: getFullMonthName(month),
+      topFiveByTotalFund,
+      topFiveByTotalSupporter,
+    };
   });
 
-  res.status(200).json(productDataAllMonth);
+  res.status(200).json({ productDataAllMonth });
 });
 
 statController.getTotalFundTrend = tryCatch(async (req, res) => {

@@ -194,9 +194,10 @@ statController.getTotalFundTrend = tryCatch(async (req, res) => {
     if (monthIndex < MONTH_NAME_MAP.length) {
       const month = MONTH_NAME_MAP[monthIndex];
       if (!cumulativeFundAllMonth.find((el) => el.label === month)) {
+        const value = pred > 0 ? Math.round(pred[i]) : 0;
         cumulativeFundAllMonth.push({
           label: month,
-          forecast: Math.round(pred[i]),
+          forecast: value,
         });
       }
     }
@@ -337,7 +338,7 @@ statController.getProductFundTrend = tryCatch(async (req, res) => {
     +productId
   );
 
-  if (!existProduct.length) {
+  if (!existProduct) {
     return res.status(200).json({ cumulativeFundAllMonth: [] });
   }
 
@@ -354,7 +355,6 @@ statController.getProductFundTrend = tryCatch(async (req, res) => {
       endDate,
       +productId
     );
-
   const mapSupportProduct = getAllSupportProduct.map((el) => ({
     month: dayjs(el.createdAt).format("MMM"),
     fund: el.tier.price,
@@ -366,8 +366,30 @@ statController.getProductFundTrend = tryCatch(async (req, res) => {
       .filter((el) => el.month === month)
       .reduce((acc, item) => acc + item.fund, 0);
     cumulativeFund += totalFundMonth;
-    return { month, cumulativeFund };
+    return { label: month, fund: cumulativeFund };
   });
+
+  const autoarima = new ARIMA({ auto: true, verbose: false }).fit(
+    cumulativeFundAllMonth.map((el) => el.fund)
+  );
+  const [pred, errors] = autoarima.predict(3);
+
+  cumulativeFundAllMonth[findIndexMonth].forecast =
+    cumulativeFundAllMonth[findIndexMonth].fund;
+
+  for (let i = 0; i < 3; i++) {
+    const monthIndex = findIndexMonth + i + 1;
+    if (monthIndex < MONTH_NAME_MAP.length) {
+      const month = MONTH_NAME_MAP[monthIndex];
+      if (!cumulativeFundAllMonth.find((el) => el.label === month)) {
+        const value = pred > 0 ? Math.round(pred[i]) : 0;
+        cumulativeFundAllMonth.push({
+          label: month,
+          forecast: value,
+        });
+      }
+    }
+  }
 
   res.status(200).json({ cumulativeFundAllMonth });
 });

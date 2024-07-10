@@ -10,6 +10,15 @@ const ARIMA = require("arima");
 
 const statController = {};
 
+function transformAndSort(data) {
+  return Object.entries(data)
+    .map(([key, value]) => ({
+      label: key,
+      value: value,
+    }))
+    .sort((a, b) => b.value - a.value); // Sort by value in descending order
+}
+
 const getCommonStats = async () => {
   const successProjects = await productService.getAllProject();
   const supportProjects = await supportProductService.getSupport();
@@ -129,7 +138,7 @@ statController.getStatByProduct = tryCatch(async (req, res) => {
       statusCode: 400,
     });
   }
-
+  t;
   const stat = {
     supporter: supportProjects.length,
     totalFund: product.totalFund,
@@ -157,31 +166,26 @@ statController.getTopFiveCategories = tryCatch(async (req, res) => {
   const products = await getFilteredProductsByMonth(startDate, endDate);
 
   const productDataAllMonth = MONTH_NAME_MAP.map((month) => {
-    const topFiveByTotalFund = [];
-    const topFiveByTotalSupporter = [];
+    const fundData = {};
+    const supporterData = {};
     products
       .filter((el) => el.month === month)
       .forEach((product) => {
-        const fundData = {};
-        const supporterData = {};
-
-        if (!fundData[product.category]) {
-          fundData["label"] = product.category;
-          fundData["value"] = 0;
+        if (fundData[product.category] === undefined) {
+          fundData[product.category] = 0;
+        } else {
+          fundData[product.category] += product.totalFund;
         }
-        if (!supporterData[product.category]) {
-          supporterData["label"] = product.category;
-          supporterData["value"] = 0;
+        if (supporterData[product.category] === undefined) {
+          supporterData[product.category] = 0;
+        } else {
+          supporterData[product.category] += product.supportProduct.length;
         }
-        fundData["value"] += product.totalFund;
-        supporterData["value"] += product.supportProduct.length;
-        topFiveByTotalFund.push(fundData);
-        topFiveByTotalSupporter.push(supporterData);
       });
     return {
       month: getFullMonthName(month),
-      topFiveByTotalFund,
-      topFiveByTotalSupporter,
+      topFiveByTotalFund: transformAndSort(fundData).slice(0, 5),
+      topFiveByTotalSupporter: transformAndSort(supporterData).slice(0, 5),
     };
   });
 

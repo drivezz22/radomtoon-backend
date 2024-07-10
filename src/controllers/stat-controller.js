@@ -210,31 +210,32 @@ statController.getTotalFundTrend = tryCatch(async (req, res) => {
     filterMonth
   );
 
-  const autoarima = new ARIMA({ p: 2, d: 1, q: 2, verbose: false }).train(
-    mapSupportProduct.map((el) => el.fund)
-  );
+  if (mapSupportProduct.length > 0) {
+    const autoarima = new ARIMA({ p: 2, d: 1, q: 2, verbose: false }).train(
+      mapSupportProduct.map((el) => el.fund)
+    );
+    const [pred, errors] = autoarima.predict(3);
 
-  const [pred, errors] = autoarima.predict(3);
+    const lastFund = cumulativeFundAllMonth[findIndexMonth].fund;
+    cumulativeFundAllMonth[findIndexMonth].forecast = lastFund;
 
-  const lastFund = cumulativeFundAllMonth[findIndexMonth].fund;
-  cumulativeFundAllMonth[findIndexMonth].forecast = lastFund;
-
-  for (let i = 0; i < 3; i++) {
-    const monthIndex = findIndexMonth + i + 1;
-    if (monthIndex < MONTH_NAME_MAP.length) {
-      const month = MONTH_NAME_MAP[monthIndex];
-      if (!cumulativeFundAllMonth.find((el) => el.label === month)) {
-        const value = pred[i] > 0 ? Math.round(pred[i]) : 0;
-        if (monthIndex - 1 >= 0) {
-          cumulativeFundAllMonth.push({
-            label: month,
-            forecast: cumulativeFundAllMonth[monthIndex - 1].forecast + value,
-          });
-        } else {
-          cumulativeFundAllMonth.push({
-            label: month,
-            forecast: value,
-          });
+    for (let i = 0; i < 3; i++) {
+      const monthIndex = findIndexMonth + i + 1;
+      if (monthIndex < MONTH_NAME_MAP.length) {
+        const month = MONTH_NAME_MAP[monthIndex];
+        if (!cumulativeFundAllMonth.find((el) => el.label === month)) {
+          const value = pred[i] > 0 ? Math.round(pred[i]) : 0;
+          if (monthIndex - 1 >= 0) {
+            cumulativeFundAllMonth.push({
+              label: month,
+              forecast: cumulativeFundAllMonth[monthIndex - 1].forecast + value,
+            });
+          } else {
+            cumulativeFundAllMonth.push({
+              label: month,
+              forecast: value,
+            });
+          }
         }
       }
     }
@@ -402,31 +403,32 @@ statController.getProductFundTrend = tryCatch(async (req, res) => {
     filterMonth
   );
 
-  const autoarima = new ARIMA({ p: 2, d: 1, q: 2, verbose: false }).train(
-    mapSupportProduct.map((el) => el.fund)
-  );
+  if (mapSupportProduct.length > 0) {
+    const autoarima = new ARIMA({ p: 2, d: 1, q: 2, verbose: false }).train(
+      mapSupportProduct.map((el) => el.fund)
+    );
+    const [pred, errors] = autoarima.predict(3);
 
-  const [pred, errors] = autoarima.predict(3);
+    const lastFund = cumulativeFundAllMonth[findIndexMonth].fund;
+    cumulativeFundAllMonth[findIndexMonth].forecast = lastFund;
 
-  const lastFund = cumulativeFundAllMonth[findIndexMonth].fund;
-  cumulativeFundAllMonth[findIndexMonth].forecast = lastFund;
-
-  for (let i = 0; i < 3; i++) {
-    const monthIndex = findIndexMonth + i + 1;
-    if (monthIndex < MONTH_NAME_MAP.length) {
-      const month = MONTH_NAME_MAP[monthIndex];
-      if (!cumulativeFundAllMonth.find((el) => el.label === month)) {
-        const value = pred[i] > 0 ? Math.round(pred[i]) : 0;
-        if (monthIndex - 1 >= 0) {
-          cumulativeFundAllMonth.push({
-            label: month,
-            forecast: cumulativeFundAllMonth[monthIndex - 1].forecast + value,
-          });
-        } else {
-          cumulativeFundAllMonth.push({
-            label: month,
-            forecast: value,
-          });
+    for (let i = 0; i < 3; i++) {
+      const monthIndex = findIndexMonth + i + 1;
+      if (monthIndex < MONTH_NAME_MAP.length) {
+        const month = MONTH_NAME_MAP[monthIndex];
+        if (!cumulativeFundAllMonth.find((el) => el.label === month)) {
+          const value = pred[i] > 0 ? Math.round(pred[i]) : 0;
+          if (monthIndex - 1 >= 0) {
+            cumulativeFundAllMonth.push({
+              label: month,
+              forecast: cumulativeFundAllMonth[monthIndex - 1].forecast + value,
+            });
+          } else {
+            cumulativeFundAllMonth.push({
+              label: month,
+              forecast: value,
+            });
+          }
         }
       }
     }

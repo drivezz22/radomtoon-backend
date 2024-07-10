@@ -114,7 +114,7 @@ statController.getAdminStat = tryCatch(async (req, res) => {
   );
 
   res.status(200).json([
-    { title: "project supported", amount: totalProjectCount },
+    { title: "active projects", amount: totalProjectCount },
     { title: "towards ideas", amount: totalFunding, currency: "THB" },
     { title: "contributions", amount: totalContributions },
     { title: "RADOMTOON's profits", amount: totalWebProfit, currency: "THB" },

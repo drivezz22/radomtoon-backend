@@ -60,13 +60,13 @@ const getFilteredProductsByMonth = async (startDate, endDate) => {
     startDate,
     endDate
   );
+
   return allProducts.map((el) => ({
     productId: el.id,
     categoryId: el.categoryId,
     category: el.category.category,
     totalFund: el.totalFund,
     supportProduct: el.supportProducts,
-    month: dayjs(el.createdAt).format("MMM"),
   }));
 };
 
@@ -138,7 +138,7 @@ statController.getStatByProduct = tryCatch(async (req, res) => {
       statusCode: 400,
     });
   }
-  t;
+
   const stat = {
     supporter: supportProjects.length,
     totalFund: product.totalFund,
@@ -165,31 +165,37 @@ statController.getTopFiveCategories = tryCatch(async (req, res) => {
   const { startDate, endDate } = getDateRange(new Date().getFullYear());
   const products = await getFilteredProductsByMonth(startDate, endDate);
 
-  const productDataAllMonth = MONTH_NAME_MAP.map((month) => {
-    const fundData = {};
-    const supporterData = {};
-    products
-      .filter((el) => el.month === month)
-      .forEach((product) => {
-        if (fundData[product.category] === undefined) {
-          fundData[product.category] = 0;
+  const productDataAllMonth = [];
+  products.forEach((product) => {
+    product.supportProduct.forEach((support) => {
+      const filterData = productDataAllMonth.filter(
+        (el) => el.month === dayjs(support.createdAt).format("MMM")
+      );
+      if (filterData.length === 0) {
+        productDataAllMonth.push({
+          month: dayjs(support.createdAt).format("MMM"),
+          fundData: { [product.category]: support.tier.price },
+          supporterData: { [product.category]: 1 },
+        });
+      } else {
+        if (filterData[0].fundData[product.category] === undefined) {
+          filterData[0].fundData[product.category] = support.tier.price;
+          filterData[0].supporterData[product.category] = 1;
         } else {
-          fundData[product.category] += product.totalFund;
+          filterData[0].fundData[product.category] += support.tier.price;
+          filterData[0].supporterData[product.category] += 1;
         }
-        if (supporterData[product.category] === undefined) {
-          supporterData[product.category] = 0;
-        } else {
-          supporterData[product.category] += product.supportProduct.length;
-        }
-      });
-    return {
-      month: getFullMonthName(month),
-      topFiveByTotalFund: transformAndSort(fundData).slice(0, 5),
-      topFiveByTotalSupporter: transformAndSort(supporterData).slice(0, 5),
-    };
+      }
+    });
   });
 
-  res.status(200).json({ productDataAllMonth });
+  const productDataAllMonthMap = productDataAllMonth.map((el) => ({
+    month: el.month,
+    topFiveByTotalFund: transformAndSort(el.fundData).slice(0, 5),
+    topFiveByTotalSupporter: transformAndSort(el.supporterData).slice(0, 5),
+  }));
+
+  res.status(200).json({ productDataAllMonth: productDataAllMonthMap });
 });
 
 statController.getTotalFundTrend = tryCatch(async (req, res) => {

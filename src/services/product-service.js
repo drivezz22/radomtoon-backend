@@ -35,8 +35,7 @@ productService.findProductById = (productId) =>
     },
   });
 
-productService.deleteProductById = (id) =>
-  prisma.product.deleteMany({ where: { id } });
+productService.deleteProductById = (id) => prisma.product.deleteMany({ where: { id } });
 
 productService.updateProductById = (id, data) =>
   prisma.product.update({
@@ -141,10 +140,7 @@ productService.getAllProject = () =>
     include: { supportProducts: { include: { tier: true } } },
   });
 
-productService.getAllSuccessfulOrPendingProjectsBetweenDates = (
-  startDate,
-  endDate
-) =>
+productService.getAllSuccessfulOrPendingProjectsBetweenDates = (startDate, endDate) =>
   prisma.product.findMany({
     where: {
       productStatusId: {
@@ -164,6 +160,7 @@ productService.getAllSuccessfulOrPendingProjectsBetweenDates = (
           category: true,
         },
       },
+      deadline: true,
       totalFund: true,
       supportProducts: {
         select: { tier: { select: { price: true } }, createdAt: true },

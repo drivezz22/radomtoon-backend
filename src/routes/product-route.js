@@ -7,7 +7,6 @@ const {
 } = require("../middlewares/validator");
 const upload = require("../middlewares/upload");
 const authenticate = require("../middlewares/authenticate");
-const { checkDeadline } = require("../utils/check-deadline-scheduler");
 
 const productRouter = express.Router();
 

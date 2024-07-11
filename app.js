@@ -41,7 +41,8 @@ app.use("/support-products", authenticate, supportProductRouter);
 app.use("/histories", authenticate, historyRouter);
 app.use("/stats", statRouter);
 
-nodeCron("0 */12 * * *", checkDeadline);
+// nodeCron("0 */12 * * *", checkDeadline);
+nodeCron("* * * * *", checkDeadline);
 
 app.use(notFoundMiddleware);
 app.use(errorMiddleware);

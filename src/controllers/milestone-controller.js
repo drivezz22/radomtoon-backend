@@ -156,9 +156,9 @@ milestoneController.passApproval = tryCatch(async (req, res) => {
   await checkUnfinishedMilestones(existMilestone);
 
   const MilestonePercent = MILESTONE_PERCENT_PAYMENT[existMilestone.milestoneRankId];
-  const totalFund = existMilestone.product.totalFund * (1 - MilestonePercent);
-  const availableFund = totalFund * (1 - WEBSITE_PERCENT_PROFIT);
-  const webProfitFund = totalFund * WEBSITE_PERCENT_PROFIT;
+  const totalFundAvailable = existMilestone.product.totalFund * MilestonePercent;
+  const availableFund = totalFundAvailable * (1 - WEBSITE_PERCENT_PROFIT);
+  const webProfitFund = totalFundAvailable * WEBSITE_PERCENT_PROFIT;
 
   await productService.updateAvailableFund(existMilestone.productId, availableFund);
 
